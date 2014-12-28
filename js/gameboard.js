@@ -2,10 +2,7 @@ var gameboardApp = angular.module('gameboardApp', [])
 
 gameboardApp.controller('gameboardCtrl', function ($scope) {
   
-  $scope.stacks = [
-    {'x':100,'y':100,'cards':['island','island','swamp','orgg'], 'rotation':0},
-    {'x':300,'y':100,'cards':['orgg'],'rotation':0}
-  ]
+  $scope.stacks = []
   
   $scope.stackOnMove = function(event) {
     var stack = $scope.stacks[event.target.dataset.index]
@@ -14,7 +11,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     $scope.$apply()
   }
   
-  $scope.stackOnTap = function(event) {
+  $scope.stackRotate = function(event) {
     var stack = $scope.stacks[event.currentTarget.dataset.index]
 
     if (stack.rotation == 0) {
@@ -22,6 +19,12 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     } else {
       stack.rotation = 0
     }
+    $scope.$apply()
+  }
+  $scope.stackFlip = function(event) {
+    console.log("stackFlip")
+    var stack = $scope.stacks[event.currentTarget.dataset.index]
+    stack.flipped = ! stack.flipped
     $scope.$apply()
   }
   
@@ -34,7 +37,24 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       },
       onmove: $scope.stackOnMove
     })
-    .on('tap',$scope.stackOnTap)
+    .on('tap',$scope.stackRotate)
+    .on('doubletap',$scope.stackFlip)
+
+
+  var holder = document.querySelector('.board-container')
+  holder.ondragover = function(e) {
+    e.preventDefault()
+  }
+  holder.ondrop = function (e) {
+    e.preventDefault()
+    var cards = []
+    for (i=0;i<e.dataTransfer.files.length;i++) {
+      cards.push(e.dataTransfer.files[i].name)
+    }
+    $scope.stacks.push({'x':e.x - 50,'y':e.y - 75,'cards':cards, 'rotation':0, 'flipped':false})
+    $scope.$apply()
+  }
 })
+
 
   

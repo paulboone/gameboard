@@ -11,7 +11,7 @@
     
   <div class="board-container">
     <div class="drag-me draggable card" ng-repeat="stack in stacks" style="transform:translate({{stack.x}}px,{{stack.y}}px) rotate({{stack.rotation}}deg)" data-index="{{$index}}">
-      <img ng-src="cards/{{stack.cards[0]}}.jpg" />
+      <img ng-src="cards/{{stack.flipped ? stack.cards[0] : '_back.jpg'}}" />
     </div>
   </div>
 
