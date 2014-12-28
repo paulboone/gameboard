@@ -1,0 +1,61 @@
+<!doctype html>
+<html ng-app="gameboardApp">
+<head>
+  <title>gameboard</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.8/angular.min.js"></script>
+  <script src="js/gameboard.js"></script>
+  <script src="js/interact-1.2.0.js"></script>
+  <link href="css/default.css" rel="stylesheet" type="text/css" media="screen" />
+</head>
+<body ng-controller="gameboardCtrl">  
+  <!-- <svg width="100%" height="400px">
+    <g ng-repeat="stack in stacks">
+      <rect x="{{stack.x}}" y="{{stack.y}}" width="50" height="75" stroke="green" stroke-width="4" fill="yellow" />
+    </g>
+  </svg>   -->
+    
+  <div class="board-container">
+    <div class="drag-me draggable" ng-repeat="stack in stacks" style="transform:translate({{stack.x}}px,{{stack.y}}px)">
+      <p> hi! </p>
+    </div>
+  </div>
+
+  
+  <p>debug list</p>
+  <ul>
+    <li ng-repeat="stack in stacks">{{stack.x}}/{{stack.y}}:{{stack.cards}}</li>
+  </ul>
+  
+<script>
+interact('.draggable')
+  .draggable({
+    restrict: {
+      restriction: "parent",
+      endOnly: true,
+      elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+    },
+
+    // call this function on every dragmove event
+    onmove: function (event) {
+      window.ev1 = event
+      // GET X/Y onto scope
+      var target = event.target,
+          // keep the dragged position in the data-x/data-y attributes
+          x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+          y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+      // translate the element
+      target.style.webkitTransform =
+      target.style.transform =
+        'translate(' + x + 'px, ' + y + 'px)';
+
+      // update the position attributes
+      target.setAttribute('data-x', x);
+      target.setAttribute('data-y', y);
+    },
+  });
+  
+</script>
+  
+</body>
+</html>
