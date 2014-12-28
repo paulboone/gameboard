@@ -2,7 +2,10 @@ var gameboardApp = angular.module('gameboardApp', [])
 
 gameboardApp.controller('gameboardCtrl', function ($scope) {
   
-  $scope.stacks = []
+  $scope.stacks = [
+    {'x':100,'y':100,'cards':['island.jpg','island.jpg','swamp.jpg','orgg.jpg','island.jpg','island.jpg','swamp.jpg','orgg.jpg'], 'rotation':0, 'flipped':false},
+    {'x':300,'y':100,'cards':['orgg.jpg'],'rotation':0, 'flipped':true}
+  ]
   
   $scope.stackOnMove = function(event) {
     var stack = $scope.stacks[event.target.dataset.index]
