@@ -8,11 +8,6 @@
   <link href="css/default.css" rel="stylesheet" type="text/css" media="screen" />
 </head>
 <body ng-controller="gameboardCtrl">  
-  <!-- <svg width="100%" height="400px">
-    <g ng-repeat="stack in stacks">
-      <rect x="{{stack.x}}" y="{{stack.y}}" width="50" height="75" stroke="green" stroke-width="4" fill="yellow" />
-    </g>
-  </svg>   -->
     
   <div class="board-container">
     <div class="drag-me draggable" ng-repeat="stack in stacks" style="transform:translate({{stack.x}}px,{{stack.y}}px)" data-index="{{$index}}">
@@ -20,15 +15,10 @@
     </div>
   </div>
 
-  
   <p>debug list</p>
   <ul>
     <li ng-repeat="stack in stacks">{{stack.x}}/{{stack.y}}:{{stack.cards}}</li>
   </ul>
-  
-<script>
-
-</script>
   
 </body>
 </html>
