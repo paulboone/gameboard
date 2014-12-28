@@ -3,11 +3,32 @@ var gameboardApp = angular.module('gameboardApp', [])
 gameboardApp.controller('gameboardCtrl', function ($scope) {
   
   $scope.stacks = [
-    {'x':100,'y':100,'cards':['island.jpg','island.jpg','swamp.jpg','orgg.jpg','island.jpg','island.jpg','swamp.jpg','orgg.jpg'], 'rotation':0, 'flipped':false},
+    {'x':100,'y':100,'cards':['island.jpg','island.jpg','orgg.jpg'], 'rotation':0, 'flipped':false, 'fixed': true},
     {'x':300,'y':100,'cards':['orgg.jpg'],'rotation':0, 'flipped':true}
   ]
   
+  $scope.stackOnMoveStart = function(event) {
+    // duplicate stack underneath this one, leaving it in place, taking only the top card
+    var stack = $scope.stacks[event.target.dataset.index]
+    
+    if (stack.fixed) {
+      var topcard = stack
+      var fullstack = angular.copy(stack)
+      
+      $scope.stacks.unshift(fullstack)
+      topcard.cards = [fullstack.cards.shift()]
+      topcard.fixed = false
+      
+      if (fullstack.cards.length == 1) {
+        fullstack.fixed = false
+      }
+      
+      $scope.$apply()
+    }
+  }
+  
   $scope.stackOnMove = function(event) {
+    console.log("move")
     var stack = $scope.stacks[event.target.dataset.index]
     stack.x += event.dx
     stack.y += event.dy
@@ -38,7 +59,8 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
         endOnly: true,
         elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
       },
-      onmove: $scope.stackOnMove
+      onmove: $scope.stackOnMove,
+      onstart: $scope.stackOnMoveStart
     })
     .on('tap',$scope.stackRotate)
     .on('doubletap',$scope.stackFlip)
