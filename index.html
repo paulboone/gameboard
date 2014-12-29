@@ -10,8 +10,9 @@
 <body ng-controller="gameboardCtrl">  
     
   <div class="board-container">
-    <div class="draggable card" ng-repeat="stack in stacks" ng-class="{moving: stack.moving}" style="transform:translate({{stack.x}}px,{{stack.y}}px) rotate({{stack.rotation}}deg); border-left-width: {{stack.cards.length + 4}}px;" data-index="{{$index}}">
-      <img ng-src="cards/{{stack.flipped ? stack.cards[0] : '_back.jpg'}}" />
+    <div class="draggable card" ng-repeat="stack in stacks" ng-class="{moving: stack.moving, 'short-stack': !stack.fixed}" style="transform:translate({{stack.x}}px,{{stack.y}}px) rotate({{stack.rotation}}deg);" data-index="{{$index}}">
+      <img ng-if="!stack.fixed" ng-repeat="card in stack.cards" ng-src="cards/{{stack.flipped ? card : '_back.jpg'}}" />
+      <img ng-if="stack.fixed" ng-src="cards/{{stack.flipped ? stack.cards[stack.cards.length - 1] : '_back.jpg'}}" style="border-left-width: {{stack.cards.length}}px"/>
     </div>
   </div>
 

@@ -23,7 +23,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   
   $scope.stacks = [
     {'x':100,'y':100,'cards':['island1.jpg','island2.jpg','act of treason.jpg'], 'rotation':0, 'flipped':false, 'fixed': true},
-    {'x':300,'y':100,'cards':['ainok tracker.jpg'],'rotation':0, 'flipped':true}
+    {'x':300,'y':100,'cards':['ainok tracker.jpg'],'rotation':0, 'flipped':true, 'fixed':false}
   ]
   
   $scope.stackOnMoveStart = function(event) {
@@ -31,12 +31,12 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     var stack = $scope.stacks[event.target.dataset.index]
     stack.moving = true
     
-    if (stack.fixed && ! event.altKey) {
+    if (stack.cards.length > 1 && (stack.fixed != event.altKey)) {
       var topcard = stack
       var fullstack = angular.copy(stack)
       
       $scope.stacks.unshift(fullstack)
-      topcard.cards = [fullstack.cards.shift()]
+      topcard.cards = [fullstack.cards.pop()]
       topcard.fixed = false
       
       if (fullstack.cards.length == 1) {
@@ -81,7 +81,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
         addlstack = $scope.stacks[addl.dataset.index]
     
     for (var i=0;i<addlstack.cards.length;i++) {
-      targetstack.cards.unshift(addlstack.cards[addlstack.cards.length - i - 1])
+      targetstack.cards.push(addlstack.cards[i])
     }
     // targetstack.cards.splice(0,0,addlstack.cards)
     

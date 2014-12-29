@@ -8,16 +8,9 @@
 }
 
 .card {
-  border: solid 5px black;
-  border-color:black;
-  border-radius: 5px;
-  border-left-width:10px;
-/*  border-top-width:10px;*/
   width: 100px;
   height: 150px;
   position:absolute;
-  margin:0;
-  padding:0;
 }
 
 .card.moving {
@@ -25,14 +18,28 @@
 }
 
 .card img {
+  border: solid 2px black;
+  border-color:black;
+  border-radius: 4px;
   position:absolute;
-  margin-left:-5px;
-  margin-top:-5px;
-  width:110px;
-  height:160px;
-  clip:rect(5px,105px,155px,5px);
+  width:100%;
+  height:100%;
 }
 
-.drop-target { border-color: #999; }
-.can-drop {   border-color: #999; }
+.drop-target {opacity:0.5;}
+.can-drop {border-width: 1px;}
 
+.short-stack {}  
+.short-stack img:nth-of-type(1) {margin-top:0px;}
+.short-stack img:nth-of-type(2) {margin-top:15px;margin-left:8px;}
+.short-stack img:nth-of-type(3) {margin-top:30px;margin-left:16px;}
+.short-stack img:nth-of-type(4) {margin-top:45px;margin-left:24px;}
+.short-stack img:nth-of-type(5) {margin-top:60px;margin-left:30px;}
+.short-stack img:nth-of-type(6) {margin-top:75px;margin-left:36px;}
+.short-stack img:nth-of-type(7) {margin-top:90px;margin-left:42px;}
+.short-stack img:nth-of-type(8) {margin-top:105px;margin-left:48px;}
+.short-stack img:nth-of-type(9) {margin-top:120px;margin-left:54px;}
+
+
+  
+  
