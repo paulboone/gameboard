@@ -48,7 +48,9 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
 
   $scope.stackOnMoveEnd = function(event) {
     var stack = $scope.stacks[event.target.dataset.index]
-    stack.moving = false
+    if (stack) { //if stack was combined, might not exist any more
+      stack.moving = false
+    }
   }
   
   $scope.stackOnMove = function(event) {
@@ -71,6 +73,19 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   $scope.stackFlip = function(event) {
     var stack = $scope.stacks[event.currentTarget.dataset.index]
     stack.flipped = ! stack.flipped
+    $scope.$apply()
+  }
+  
+  $scope.combineStacks = function(target, addl) {
+    var targetstack = $scope.stacks[target.dataset.index],
+        addlstack = $scope.stacks[addl.dataset.index]
+    
+    for (var i=0;i<addlstack.cards.length;i++) {
+      targetstack.cards.unshift(addlstack.cards[addlstack.cards.length - i - 1])
+    }
+    // targetstack.cards.splice(0,0,addlstack.cards)
+    
+    $scope.stacks.splice(addl.dataset.index,1)
     $scope.$apply()
   }
   
@@ -107,6 +122,30 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     })
     .on('tap',$scope.stackRotate)
     .on('doubletap',$scope.stackFlip)
+
+  interact('.draggable').dropzone({
+    // Require a 50% element overlap for a drop to be possible
+    overlap: 0.50,
+
+    ondragenter: function (event) {
+      var draggableElement = event.relatedTarget,
+          dropzoneElement = event.target
+
+      // feedback the possibility of a drop
+      dropzoneElement.classList.add('drop-target')
+      draggableElement.classList.add('can-drop')
+    },
+    ondragleave: function (event) {
+      event.target.classList.remove('drop-target')
+      event.relatedTarget.classList.remove('can-drop')
+    },
+    ondrop: function (event) {
+      event.target.classList.remove('drop-target')
+      event.relatedTarget.classList.remove('can-drop')
+      $scope.combineStacks(event.target,event.relatedTarget)
+      console.log('Dropped')
+    },
+  })
 
 
   var holder = document.querySelector('.board-container')
