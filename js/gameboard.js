@@ -10,6 +10,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   $scope.stackOnMoveStart = function(event) {
     // duplicate stack underneath this one, leaving it in place, taking only the top card
     var stack = $scope.stacks[event.target.dataset.index]
+    stack.moving = true
     
     if (stack.fixed) {
       var topcard = stack
@@ -22,13 +23,16 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       if (fullstack.cards.length == 1) {
         fullstack.fixed = false
       }
-      
       $scope.$apply()
     }
   }
+
+  $scope.stackOnMoveEnd = function(event) {
+    var stack = $scope.stacks[event.target.dataset.index]
+    stack.moving = false
+  }
   
   $scope.stackOnMove = function(event) {
-    console.log("move")
     var stack = $scope.stacks[event.target.dataset.index]
     stack.x += event.dx
     stack.y += event.dy
@@ -60,7 +64,8 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
         elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
       },
       onmove: $scope.stackOnMove,
-      onstart: $scope.stackOnMoveStart
+      onstart: $scope.stackOnMoveStart,
+      onend: $scope.stackOnMoveEnd
     })
     .on('tap',$scope.stackRotate)
     .on('doubletap',$scope.stackFlip)
@@ -76,7 +81,9 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     for (i=0;i<e.dataTransfer.files.length;i++) {
       cards.push(e.dataTransfer.files[i].name)
     }
-    $scope.stacks.push({'x':e.x - 50,'y':e.y - 75,'cards':cards, 'rotation':0, 'flipped':false})
+    var stack = {'x':e.x - 50,'y':e.y - 75,'cards':cards, 'rotation':0, 'flipped':false}
+    stack.fixed = stack.cards.length > 1
+    $scope.stacks.push(stack)
     $scope.$apply()
   }
 })

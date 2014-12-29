@@ -18,7 +18,10 @@
   position:absolute;
   margin:0;
   padding:0;
-  
+}
+
+.card.moving {
+  z-index:1000;
 }
 
 .card img {
