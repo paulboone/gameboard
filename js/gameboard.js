@@ -12,7 +12,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     var stack = $scope.stacks[event.target.dataset.index]
     stack.moving = true
     
-    if (stack.fixed) {
+    if (stack.fixed && ! event.altKey) {
       var topcard = stack
       var fullstack = angular.copy(stack)
       
