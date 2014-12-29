@@ -3,8 +3,8 @@ var gameboardApp = angular.module('gameboardApp', [])
 gameboardApp.controller('gameboardCtrl', function ($scope) {
   
   $scope.stacks = [
-    {'x':100,'y':100,'cards':['island.jpg','island.jpg','orgg.jpg'], 'rotation':0, 'flipped':false, 'fixed': true},
-    {'x':300,'y':100,'cards':['orgg.jpg'],'rotation':0, 'flipped':true}
+    {'x':100,'y':100,'cards':['island1.jpg','island2.jpg','act of treason.jpg'], 'rotation':0, 'flipped':false, 'fixed': true},
+    {'x':300,'y':100,'cards':['ainok tracker.jpg'],'rotation':0, 'flipped':true}
   ]
   
   $scope.stackOnMoveStart = function(event) {
@@ -50,10 +50,29 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     $scope.$apply()
   }
   $scope.stackFlip = function(event) {
-    console.log("stackFlip")
     var stack = $scope.stacks[event.currentTarget.dataset.index]
     stack.flipped = ! stack.flipped
     $scope.$apply()
+  }
+  
+  $scope.importDeck = function(decklist) {    
+    var deckdefs = decklist.split("\n"),
+        cards = [],
+        row, results, numcards, cardname
+    
+    for (i=0;i<deckdefs.length;i++) {
+      row = deckdefs[i]
+      results = row.match(/^([0-9]+) (.+)/)
+      
+      if (results) {
+        numcards = results[1]
+        cardname = results[2]
+        for (n=0;n<numcards;n++) {
+          cards.push(cardname.toLowerCase() + ".jpg")
+        }
+      }
+    }
+    return cards
   }
   
   interact('.draggable')
@@ -77,14 +96,30 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   }
   holder.ondrop = function (e) {
     e.preventDefault()
+
     var cards = []
     for (i=0;i<e.dataTransfer.files.length;i++) {
-      cards.push(e.dataTransfer.files[i].name)
+      var filename = e.dataTransfer.files[i].name
+      if (filename.match(/\.txt$/)) {
+        var fr = new FileReader()
+        fr.onload = function(e1) {
+          var importcards = $scope.importDeck(e1.target.result)
+          var importstack = {'x':e.x - 50,'y':e.y - 75,'cards':importcards, 'rotation':0, 'flipped':false}
+          importstack.fixed = importstack.cards.length > 1
+          $scope.stacks.push(importstack)
+          $scope.$apply()          
+        }
+        fr.readAsText(e.dataTransfer.files[i])
+      } else {
+        cards.push(filename)  
+      }
     }
-    var stack = {'x':e.x - 50,'y':e.y - 75,'cards':cards, 'rotation':0, 'flipped':false}
-    stack.fixed = stack.cards.length > 1
-    $scope.stacks.push(stack)
-    $scope.$apply()
+    if (cards.length > 0) {
+      var stack = {'x':e.x - 50,'y':e.y - 75,'cards':cards, 'rotation':0, 'flipped':false}
+      stack.fixed = stack.cards.length > 1
+      $scope.stacks.push(stack)
+      $scope.$apply()
+    }
   }
 })
 
