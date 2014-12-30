@@ -22,21 +22,24 @@ function shuffle(array) {
 gameboardApp.controller('gameboardCtrl', function ($scope) {
   
   $scope.stacks = [
-    {'x':100,'y':100,'cards':['island1.jpg','island2.jpg','act of treason.jpg'], 'rotation':0, 'flipped':false},
+    {'x':100,'y':100,'cards':['island1.jpg','island1.jpg','act of treason.jpg'], 'rotation':0, 'flipped':false},
     {'x':300,'y':100,'cards':['ainok tracker.jpg'],'rotation':0, 'flipped':true}
   ]
   
   $scope.stackOnMoveStart = function(event) {
     // duplicate stack underneath this one, leaving it in place, taking only the top card
+    console.log(event)
     var stack = $scope.stacks[event.target.dataset.index]
     stack.moving = true
     
-    if (stack.cards.length > 1 && ((stack.zone == 'fixed') != event.altKey)) {
+    if (stack.cards.length > 1 && (stack.zone == 'fixed') != event.altKey) {
       var topcard = stack
       var fullstack = angular.copy(stack)
       
       $scope.stacks.unshift(fullstack)
       topcard.cards = [fullstack.cards.pop()]
+      console.log("topcard",topcard.cards)
+      console.log("fullstack",fullstack.cards)
       $scope.$apply()
     }
   }
