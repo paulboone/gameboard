@@ -22,8 +22,8 @@ function shuffle(array) {
 gameboardApp.controller('gameboardCtrl', function ($scope) {
   
   $scope.stacks = [
-    {'x':100,'y':100,'cards':['island1.jpg','island2.jpg','act of treason.jpg'], 'rotation':0, 'flipped':false, 'fixed': true},
-    {'x':300,'y':100,'cards':['ainok tracker.jpg'],'rotation':0, 'flipped':true, 'fixed':false}
+    {'x':100,'y':100,'cards':['island1.jpg','island2.jpg','act of treason.jpg'], 'rotation':0, 'flipped':false},
+    {'x':300,'y':100,'cards':['ainok tracker.jpg'],'rotation':0, 'flipped':true}
   ]
   
   $scope.stackOnMoveStart = function(event) {
@@ -31,25 +31,39 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     var stack = $scope.stacks[event.target.dataset.index]
     stack.moving = true
     
-    if (stack.cards.length > 1 && (stack.fixed != event.altKey)) {
+    if (stack.cards.length > 1 && ((stack.zone == 'fixed') != event.altKey)) {
       var topcard = stack
       var fullstack = angular.copy(stack)
       
       $scope.stacks.unshift(fullstack)
       topcard.cards = [fullstack.cards.pop()]
-      topcard.fixed = false
-      
-      if (fullstack.cards.length == 1) {
-        fullstack.fixed = false
-      }
       $scope.$apply()
     }
   }
 
   $scope.stackOnMoveEnd = function(event) {
+    
     var stack = $scope.stacks[event.target.dataset.index]
     if (stack) { //if stack was combined, might not exist any more
       stack.moving = false
+
+      var gridsize = 30,
+          div = Math.floor(stack.y / 30)
+    
+      if (stack.y % gridsize > gridsize / 2) {
+        stack.y = (div + 1) * gridsize
+      } else {
+        stack.y = div * gridsize
+      }
+    
+      div = Math.floor(stack.x / 30)
+      if (stack.x % gridsize > gridsize / 2) {
+        stack.x = (div + 1) * gridsize
+      } else {
+        stack.x = div * gridsize
+      }
+    
+      $scope.$apply()
     }
   }
   
@@ -146,9 +160,49 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       console.log('Dropped')
     },
   })
+  
+  interact('.zone').dropzone({
+    ondragenter: function (event) {
+      var draggableElement = event.relatedTarget,
+          dropzoneElement = event.target
+
+      if (! dropzoneElement.classList.contains("zone-board")) {
+        dropzoneElement.classList.add('drop-target')
+        draggableElement.classList.add('can-drop')
+      }
+    },
+    ondragleave: function (event) {
+      event.target.classList.remove('drop-target')
+      event.relatedTarget.classList.remove('can-drop')
+    },
+    ondrop: function (event) {
+      event.target.classList.remove('drop-target')
+      event.relatedTarget.classList.remove('can-drop')
+
+      var dropstack = $scope.stacks[event.relatedTarget.dataset.index]
+      
+      if (event.target.classList.contains("zone-private")) {
+        dropstack['zone'] = "private"
+        dropstack.flipped = true
+        dropstack.y = 730
+      } else if (event.target.classList.contains("zone-fixed")) {
+        dropstack['zone'] = "fixed"
+        dropstack.y = 730
+      } else {
+        dropstack['zone'] = "board"
+      }
+      console.log(dropstack.zone)
+      
+      $scope.$apply()
+
+      // $scope.combineStacks(event.target,event.relatedTarget)
+      console.log('Dropped')
+    },
+  })
+  
 
 
-  var holder = document.querySelector('.board-container')
+  var holder = document.querySelector('.zone-board')
   holder.ondragover = function(e) {
     e.preventDefault()
   }
@@ -163,7 +217,6 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
         fr.onload = function(e1) {
           var importcards = $scope.importDeck(e1.target.result)
           var importstack = {'x':e.x - 50,'y':e.y - 75,'cards':importcards, 'rotation':0, 'flipped':false}
-          importstack.fixed = importstack.cards.length > 1
           $scope.stacks.push(importstack)
           $scope.$apply()          
         }
@@ -174,7 +227,6 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     }
     if (cards.length > 0) {
       var stack = {'x':e.x - 50,'y':e.y - 75,'cards':cards, 'rotation':0, 'flipped':false}
-      stack.fixed = stack.cards.length > 1
       $scope.stacks.push(stack)
       $scope.$apply()
     }
