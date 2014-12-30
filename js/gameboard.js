@@ -80,17 +80,21 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   $scope.stackRotate = function(event) {
     var stack = $scope.stacks[event.currentTarget.dataset.index]
 
-    if (stack.rotation == 0) {
-      stack.rotation = 90
-    } else {
-      stack.rotation = 0
+    if ((stack.zone != 'fixed') != event.altKey ) {
+      if (stack.rotation == 0) {
+        stack.rotation = 90
+      } else {
+        stack.rotation = 0
+      }
+      $scope.$apply()
     }
-    $scope.$apply()
   }
   $scope.stackFlip = function(event) {
     var stack = $scope.stacks[event.currentTarget.dataset.index]
-    stack.flipped = ! stack.flipped
-    $scope.$apply()
+    if (stack.zone != 'fixed') {
+      stack.flipped = ! stack.flipped
+      $scope.$apply()
+    }
   }
   
   $scope.combineStacks = function(target, addl) {
