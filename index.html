@@ -10,18 +10,16 @@
 <body ng-controller="gameboardCtrl">  
     
   <div class="zone zone-board">
-    <div class="draggable card" ng-repeat="stack in stacks" ng-class="{moving: stack.moving, 'short-stack': !stack.fixed}" style="transform:translate({{stack.x}}px,{{stack.y}}px) rotate({{stack.rotation}}deg);" data-index="{{$index}}">
-      <img ng-if="stack.zone != 'fixed' && stack.cards.length <= 10" ng-repeat="card in stack.cards track by $index" ng-src="cards/{{stack.flipped ? card : '_back.jpg'}}" />
-      <img ng-if="stack.zone == 'fixed' || stack.cards.length > 10" ng-src="cards/{{stack.flipped ? stack.cards[stack.cards.length - 1] : '_back.jpg'}}" style="border-left-width: {{stack.cards.length / 2}}px"/>
-    </div>
     <div class="zone zone-fixed">
       <p>Fixed</p>
     </div>
     <div class="zone zone-private">
       <p>Hidden</p>
     </div>
-    
-    
+    <div class="draggable card" ng-repeat="stack in stacks" ng-class="{moving: stack.moving, 'short-stack': !stack.fixed}" style="transform:translate({{stack.x}}px,{{stack.y}}px) rotate({{stack.rotation}}deg);" data-index="{{$index}}">
+      <img ng-if="stack.zone != 'fixed' && stack.cards.length <= 10" ng-repeat="card in stack.cards track by $index" ng-src="cards/{{stack.flipped ? card : '_back.jpg'}}" />
+      <img ng-if="stack.zone == 'fixed' || stack.cards.length > 10" ng-src="cards/{{stack.flipped ? stack.cards[stack.cards.length - 1] : '_back.jpg'}}" style="border-left-width: {{stack.cards.length / 2}}px"/>
+    </div>
   </div>
 
   <p>debug list</p>
