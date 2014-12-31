@@ -19,12 +19,32 @@ function shuffle(array) {
   return array;
 }
 
+// gameboardApp.directive('stackStyle', function(a) {
+//   return "test"
+// })
+
 gameboardApp.controller('gameboardCtrl', function ($scope) {
   
   $scope.stacks = [
-    {'x':100,'y':100,'cards':['island1.jpg','island1.jpg','act of treason.jpg'], 'rotation':0, 'flipped':false},
-    {'x':300,'y':100,'cards':['ainok tracker.jpg'],'rotation':0, 'flipped':true}
+    {'x':100,'y':100,'cards':['island1.jpg','island1.jpg','act of treason.jpg'], 'rotation':0, 'flipped':false, 'spread':false},
+    {'x':300,'y':100,'cards':['ainok tracker.jpg'],'rotation':0, 'flipped':true, 'spread':false}
   ]
+    
+  $scope.stackStyle = function(stack, index) {
+    if (stack.zone == 'fixed' && stack.spread) {
+      rindex = stack.cards.length - index - 1
+      xmod = 8
+      ymod = -15
+      return "transform:translate(" + rindex * xmod + "px," + rindex * ymod + "px)"
+    } else if (stack.zone == 'fixed') {
+      xmod = 0.5
+      ymod = 0
+    } else {
+      xmod = 8
+      ymod = 15      
+    }
+    return "transform:translate(" + index * xmod + "px," + index * ymod + "px)"
+  }
   
   $scope.stackOnMoveStart = function(event) {
     // duplicate stack underneath this one, leaving it in place, taking only the top card
@@ -90,11 +110,16 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     }
   }
   $scope.stackFlip = function(event) {
+    console.log("stackFlip")
     var stack = $scope.stacks[event.currentTarget.dataset.index]
     if (stack.zone != 'fixed') {
       stack.flipped = ! stack.flipped
-      $scope.$apply()
+
+    }  else { //fixed! don't flip, spread!
+      stack.spread = ! stack.spread
+      console.log("spread:",stack.spread)
     }
+    $scope.$apply()
   }
   
   $scope.combineStacks = function(target, addl) {
@@ -142,7 +167,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       onend: $scope.stackOnMoveEnd
     })
     .on('tap',$scope.stackRotate)
-    .on('doubletap',$scope.stackFlip)
+    .on('doubletap', $scope.stackFlip)
 
   interact('.draggable').dropzone({
     // Require a 50% element overlap for a drop to be possible
@@ -223,7 +248,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
         var fr = new FileReader()
         fr.onload = function(e1) {
           var importcards = $scope.importDeck(e1.target.result)
-          var importstack = {'x':e.x - 50,'y':e.y - 75,'cards':importcards, 'rotation':0, 'flipped':false}
+          var importstack = {'x':e.x - 50,'y':e.y - 75,'cards':importcards, 'rotation':0, 'flipped':false, 'spread':false}
           $scope.stacks.push(importstack)
           $scope.$apply()          
         }
@@ -233,7 +258,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       }
     }
     if (cards.length > 0) {
-      var stack = {'x':e.x - 50,'y':e.y - 75,'cards':cards, 'rotation':0, 'flipped':false}
+      var stack = {'x':e.x - 50,'y':e.y - 75,'cards':cards, 'rotation':0, 'flipped':false, 'spread':false}
       $scope.stacks.push(stack)
       $scope.$apply()
     }

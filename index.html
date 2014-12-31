@@ -17,11 +17,12 @@
       <p>Hidden</p>
     </div>
     <div class="draggable card" ng-repeat="stack in stacks" ng-class="{moving: stack.moving, 'short-stack': !stack.fixed}" style="transform:translate({{stack.x}}px,{{stack.y}}px) rotate({{stack.rotation}}deg);" data-index="{{$index}}">
-      <img ng-if="stack.zone != 'fixed' && stack.cards.length <= 10" ng-repeat="card in stack.cards track by $index" ng-src="cards/{{stack.flipped ? card : '_back.jpg'}}" />
-      <img ng-if="stack.zone == 'fixed' || stack.cards.length > 10" ng-src="cards/{{stack.flipped ? stack.cards[stack.cards.length - 1] : '_back.jpg'}}" style="border-left-width: {{stack.cards.length / 2}}px"/>
+      <img ng-repeat="card in stack.cards track by $index" ng-src="cards/{{stack.flipped ? card : '_back.jpg'}}" style="{{stackStyle(stack, $index)}}" ng-click="{{console.log('hi',$index)}}"/>
+
     </div>
   </div>
 
+  <a>{{test()}}</a>
   <p>debug list</p>
   <ul>
     <li ng-repeat="stack in stacks">{{stack.x}}/{{stack.y}}:{{stack.cards}}</li>

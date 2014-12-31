@@ -64,10 +64,14 @@ body {
   height:100%;
 }
 
+/*.card img:hover {
+  z-index:999;
+}
+*/
 .drop-target {opacity:0.5;}
 .can-drop {border-width: 1px;}
 
-.short-stack {}  
+/*.short-stack {}
 .short-stack img:nth-of-type(1) {margin-top:0px;}
 .short-stack img:nth-of-type(2) {margin-top:15px;margin-left:8px;}
 .short-stack img:nth-of-type(3) {margin-top:30px;margin-left:16px;}
@@ -79,5 +83,6 @@ body {
 .short-stack img:nth-of-type(9) {margin-top:120px;margin-left:54px;}
 
 
-  
-  
+
+
+*/
