@@ -25,113 +25,126 @@ function shuffle(array) {
 
 gameboardApp.controller('gameboardCtrl', function ($scope) {
   
-  $scope.stacks = [
-    {'x':100,'y':100,'cards':['island1.jpg','island1.jpg','act of treason.jpg'], 'rotation':0, 'flipped':false, 'spread':false},
-    {'x':300,'y':100,'cards':['ainok tracker.jpg'],'rotation':0, 'flipped':true, 'spread':false}
+  $scope.zcounter = 0
+  $scope.cards = [
+    {'x':100,'y':100,'z':0, 'src': 'island1.jpg', 'rotation':0, 'flipped':false, 'spread':false, 'prev': null, 'next': null},
+    {'x':300,'y':100,'z':0, 'src': 'ainok tracker.jpg','rotation':0, 'flipped':true, 'spread':false, 'prev': null, 'next': null}
   ]
     
-  $scope.stackStyle = function(stack, index) {
-    if (stack.zone == 'fixed' && stack.spread) {
-      rindex = stack.cards.length - index - 1
-      xmod = 8
-      ymod = -15
-      return "transform:translate(" + rindex * xmod + "px," + rindex * ymod + "px)"
-    } else if (stack.zone == 'fixed') {
-      xmod = 0.5
-      ymod = 0
-    } else {
-      xmod = 8
-      ymod = 15      
-    }
-    return "transform:translate(" + index * xmod + "px," + index * ymod + "px)"
-  }
+  // $scope.stackStyle = function(stack, index) {
+  //   if (stack.zone == 'fixed' && stack.spread) {
+  //     rindex = stack.cards.length - index - 1
+  //     xmod = 8
+  //     ymod = -15
+  //     return "transform:translate(" + rindex * xmod + "px," + rindex * ymod + "px)"
+  //   } else if (stack.zone == 'fixed') {
+  //     xmod = 0.5
+  //     ymod = 0
+  //   } else {
+  //     xmod = 8
+  //     ymod = 15
+  //   }
+  //   return "transform:translate(" + index * xmod + "px," + index * ymod + "px)"
+  // }
   
-  $scope.stackOnMoveStart = function(event) {
+  $scope.cardOnMoveStart = function(event) {
     // duplicate stack underneath this one, leaving it in place, taking only the top card
     console.log(event)
-    var stack = $scope.stacks[event.target.dataset.index]
-    stack.moving = true
+    var card = $scope.cards[event.target.dataset.index]
+    card.moving = true
+    card.z = ++$scope.zcounter;
+    console.log("setting card.z to ", card.z, $scope.zcounter)
     
-    if (stack.cards.length > 1 && (stack.zone == 'fixed') != event.altKey) {
-      var topcard = stack
-      var fullstack = angular.copy(stack)
-      
-      $scope.stacks.unshift(fullstack)
-      topcard.cards = [fullstack.cards.pop()]
-      console.log("topcard",topcard.cards)
-      console.log("fullstack",fullstack.cards)
-      $scope.$apply()
-    }
+    // if (stack.cards.length > 1 && (stack.zone == 'fixed') != event.altKey) {
+    //   var topcard = stack
+    //   var fullstack = angular.copy(stack)
+    //
+    //   $scope.cards.unshift(fullstack)
+    //   topcard.cards = [fullstack.cards.pop()]
+    //   console.log("topcard",topcard.cards)
+    //   console.log("fullstack",fullstack.cards)
+    //   $scope.$apply()
+    // }
   }
 
-  $scope.stackOnMoveEnd = function(event) {
-    
-    var stack = $scope.stacks[event.target.dataset.index]
-    if (stack) { //if stack was combined, might not exist any more
-      stack.moving = false
+  $scope.cardOnMoveEnd = function(event) {
+    var card = $scope.cards[event.target.dataset.index]
+    // if (card) { //if c was combined, might not exist any more
+    card.moving = false
 
+    // only snap to grid if not on top of another card
+    if (! card.prev) {
       var gridsize = 30,
-          div = Math.floor(stack.y / 30)
-    
-      if (stack.y % gridsize > gridsize / 2) {
-        stack.y = (div + 1) * gridsize
+          div = Math.floor(card.y / 30)
+
+      if (card.y % gridsize > gridsize / 2) {
+        card.y = (div + 1) * gridsize
       } else {
-        stack.y = div * gridsize
+        card.y = div * gridsize
       }
-    
-      div = Math.floor(stack.x / 30)
-      if (stack.x % gridsize > gridsize / 2) {
-        stack.x = (div + 1) * gridsize
+
+      div = Math.floor(card.x / 30)
+      if (card.x % gridsize > gridsize / 2) {
+        card.x = (div + 1) * gridsize
       } else {
-        stack.x = div * gridsize
+        card.x = div * gridsize
       }
-    
-      $scope.$apply()
     }
+    $scope.$apply()
+    // }
   }
   
-  $scope.stackOnMove = function(event) {
-    var stack = $scope.stacks[event.target.dataset.index]
-    stack.x += event.dx
-    stack.y += event.dy
+  $scope.cardOnMove = function(event) {
+    var card = $scope.cards[event.target.dataset.index]
+    card.x += event.dx
+    card.y += event.dy
     $scope.$apply()
   }
   
-  $scope.stackRotate = function(event) {
-    var stack = $scope.stacks[event.currentTarget.dataset.index]
+  $scope.cardRotate = function(event) {
+    var card = $scope.cards[event.currentTarget.dataset.index]
 
-    if ((stack.zone != 'fixed') != event.altKey ) {
-      if (stack.rotation == 0) {
-        stack.rotation = 90
+    if ((card.zone != 'fixed') != event.altKey ) {
+      if (card.rotation == 0) {
+        card.rotation = 90
       } else {
-        stack.rotation = 0
+        card.rotation = 0
       }
       $scope.$apply()
     }
   }
   $scope.stackFlip = function(event) {
     console.log("stackFlip")
-    var stack = $scope.stacks[event.currentTarget.dataset.index]
-    if (stack.zone != 'fixed') {
-      stack.flipped = ! stack.flipped
+    var card = $scope.cards[event.currentTarget.dataset.index]
+    if (card.zone != 'fixed') {
+      card.flipped = ! card.flipped
 
     }  else { //fixed! don't flip, spread!
-      stack.spread = ! stack.spread
-      console.log("spread:",stack.spread)
+      // card.spread = ! card.spread
+      // console.log("spread:",stack.spread)
     }
     $scope.$apply()
   }
   
-  $scope.combineStacks = function(target, addl) {
-    var targetstack = $scope.stacks[target.dataset.index],
-        addlstack = $scope.stacks[addl.dataset.index]
+  $scope.addCardToStack = function(target, addl) {
+    var targetcard = $scope.cards[target.dataset.index],
+        addlcard = $scope.cards[addl.dataset.index]
     
-    for (var i=0;i<addlstack.cards.length;i++) {
-      targetstack.cards.push(addlstack.cards[i])
-    }
-    // targetstack.cards.splice(0,0,addlstack.cards)
+    console.log("dropping ", addlcard.src, " on ", targetcard.src)
     
-    $scope.stacks.splice(addl.dataset.index,1)
+    targetcard.next = addlcard
+    addlcard.prev = targetcard
+    
+    addlcard.x = targetcard.x + 8
+    addlcard.y = targetcard.y + 15
+    addlcard.z = targetcard.z + 1
+    
+    console.log("targetcard", targetcard)
+    console.log("addlcard", addlcard)
+    // RESET cards further on top
+    
+    // targetstack.cards.splice(0,0,addlstack.cards)    
+    // $scope.stacks.splice(addl.dataset.index,1)
     $scope.$apply()
   }
   
@@ -155,6 +168,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     return shuffle(cards)
   }
   
+
   interact('.draggable')
     .draggable({
       restrict: {
@@ -162,13 +176,14 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
         endOnly: true,
         elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
       },
-      onmove: $scope.stackOnMove,
-      onstart: $scope.stackOnMoveStart,
-      onend: $scope.stackOnMoveEnd
+      onmove: $scope.cardOnMove,
+      onstart: $scope.cardOnMoveStart,
+      onend: $scope.cardOnMoveEnd
     })
-    .on('tap',$scope.stackRotate)
+    .on('tap',$scope.cardRotate)
     .on('doubletap', $scope.stackFlip)
-
+    
+  // card on card interactions
   interact('.draggable').dropzone({
     // Require a 50% element overlap for a drop to be possible
     overlap: 0.50,
@@ -188,8 +203,8 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     ondrop: function (event) {
       event.target.classList.remove('drop-target')
       event.relatedTarget.classList.remove('can-drop')
-      $scope.combineStacks(event.target,event.relatedTarget)
-      console.log('Dropped')
+      $scope.addCardToStack(event.target,event.relatedTarget)
+      console.log('Dropped on card')
     },
   })
   
@@ -211,24 +226,30 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       event.target.classList.remove('drop-target')
       event.relatedTarget.classList.remove('can-drop')
 
-      var dropstack = $scope.stacks[event.relatedTarget.dataset.index]
+      var card = $scope.cards[event.relatedTarget.dataset.index]
+      
+      //detach from previous card, if it exists
+      if (card.prev) {
+        card.prev.next = null
+        card.prev = null        
+      }
       
       if (event.target.classList.contains("zone-private")) {
-        dropstack['zone'] = "private"
-        dropstack.flipped = true
-        dropstack.y = 730
+        card['zone'] = "private"
+        card.flipped = true
+        card.y = 730
       } else if (event.target.classList.contains("zone-fixed")) {
-        dropstack['zone'] = "fixed"
-        dropstack.y = 730
+        card['zone'] = "fixed"
+        card.y = 730
       } else {
-        dropstack['zone'] = "board"
+        card['zone'] = "board"
       }
-      console.log(dropstack.zone)
+      console.log(card.zone)
       
       $scope.$apply()
 
       // $scope.combineStacks(event.target,event.relatedTarget)
-      console.log('Dropped')
+      console.log('Dropped on zone')
     },
   })
   

@@ -48,13 +48,13 @@ body {
   width: 100px;
   height: 150px;
   position:absolute;
-  z-index:1;
+/*  z-index:1;*/
 }
 
-.card.moving {
+/*.card.moving {
   z-index:1000;
 }
-
+*/
 .card img {
   border: solid 2px black;
   border-color:black;

@@ -16,16 +16,15 @@
     <div class="zone zone-private">
       <p>Hidden</p>
     </div>
-    <div class="draggable card" ng-repeat="stack in stacks" ng-class="{moving: stack.moving, 'short-stack': !stack.fixed}" style="transform:translate({{stack.x}}px,{{stack.y}}px) rotate({{stack.rotation}}deg);" data-index="{{$index}}">
-      <img ng-repeat="card in stack.cards track by $index" ng-src="cards/{{stack.flipped ? card : '_back.jpg'}}" style="{{stackStyle(stack, $index)}}" ng-click="{{console.log('hi',$index)}}"/>
-
+    <div class="draggable card" ng-repeat="card in cards" style="transform:translate({{card.x}}px,{{card.y}}px) rotate({{card.rotation}}deg); z-index: {{card.z}}" data-index="{{$index}}">
+      <img ng-src="cards/{{card.flipped ? card.src : '_back.jpg'}}" />
     </div>
   </div>
 
   <a>{{test()}}</a>
   <p>debug list</p>
   <ul>
-    <li ng-repeat="stack in stacks">{{stack.x}}/{{stack.y}}:{{stack.cards}}</li>
+    <li ng-repeat="card in cards">{{card.x}}/{{card.y}}:{{card.src}}</li>
   </ul>
   
 </body>
