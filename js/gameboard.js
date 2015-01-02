@@ -26,6 +26,7 @@ function shuffle(array) {
 gameboardApp.controller('gameboardCtrl', function ($scope) {
   
   $scope.zcounter = 0
+  $scope.movestack = false
   $scope.cards = [
     {'x':100,'y':100,'z':0, 'src': 'island1.jpg', 'rotation':0, 'flipped':false, 'spread':false, 'prev': null, 'next': null},
     {'x':300,'y':100,'z':0, 'src': 'ainok tracker.jpg','rotation':0, 'flipped':true, 'spread':false, 'prev': null, 'next': null}
@@ -47,57 +48,112 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   //   return "transform:translate(" + index * xmod + "px," + index * ymod + "px)"
   // }
   
+
+  function getBaseCard(card) {
+    var c = card;
+    
+    while (c.prev) {
+      c = c.prev
+    }
+    
+    return c
+  }
+  
+  function propagateUpXYZ(baseCard) {
+    var c = baseCard
+    while (c.next) {
+      c = c.next
+            
+      c.x = c.prev.x + 8
+      c.y = c.prev.y + 15
+      c.z = c.prev.z + 1      
+    }
+  }
+
+  function snapToGrid(card) {
+    card = getBaseCard(card)
+    
+    var gridsize = 30,
+        div = Math.floor(card.y / 30)
+
+    if (card.y % gridsize > gridsize / 2) {
+      card.y = (div + 1) * gridsize
+    } else {
+      card.y = div * gridsize
+    }
+
+    div = Math.floor(card.x / 30)
+    if (card.x % gridsize > gridsize / 2) {
+      card.x = (div + 1) * gridsize
+    } else {
+      card.x = div * gridsize
+    }
+    
+    propagateUpXYZ(card)
+  }
+  
+  function changeStack(card,vars) {
+    card = getBaseCard(card)
+    
+    do {
+      for(var k in vars) {
+          card[k] = vars[k]
+      }      
+      card = card.next
+    } while (card)    
+  }
+  
   $scope.cardOnMoveStart = function(event) {
     // duplicate stack underneath this one, leaving it in place, taking only the top card
     console.log(event)
     var card = $scope.cards[event.target.dataset.index]
-    card.moving = true
     card.z = ++$scope.zcounter;
-    console.log("setting card.z to ", card.z, $scope.zcounter)
     
-    // if (stack.cards.length > 1 && (stack.zone == 'fixed') != event.altKey) {
-    //   var topcard = stack
-    //   var fullstack = angular.copy(stack)
-    //
-    //   $scope.cards.unshift(fullstack)
-    //   topcard.cards = [fullstack.cards.pop()]
-    //   console.log("topcard",topcard.cards)
-    //   console.log("fullstack",fullstack.cards)
-    //   $scope.$apply()
-    // }
-  }
-
-  $scope.cardOnMoveEnd = function(event) {
-    var card = $scope.cards[event.target.dataset.index]
-    // if (card) { //if c was combined, might not exist any more
-    card.moving = false
-
-    // only snap to grid if not on top of another card
-    if (! card.prev) {
-      var gridsize = 30,
-          div = Math.floor(card.y / 30)
-
-      if (card.y % gridsize > gridsize / 2) {
-        card.y = (div + 1) * gridsize
-      } else {
-        card.y = div * gridsize
+    if (! event.altKey) {
+      // if we're part of a stack, we have to extract ourselves
+      var oldstackcard = null
+      if (card.next) {
+        oldstackcard = card.next
+        card.next.prev = card.prev
       }
-
-      div = Math.floor(card.x / 30)
-      if (card.x % gridsize > gridsize / 2) {
-        card.x = (div + 1) * gridsize
-      } else {
-        card.x = div * gridsize
+      
+      if (card.prev) {
+        oldstackcard = card.prev
+        card.prev.next = card.next
+      }
+        
+      card.prev = null
+      card.next = null
+      
+      if (oldstackcard) {
+        snapToGrid(oldstackcard)
       }
     }
+  }
+  
+  
+  
+  $scope.cardOnMoveEnd = function(event) {
+    var card = $scope.cards[event.target.dataset.index]
+    
+    snapToGrid(card)
+      
     $scope.$apply()
-    // }
   }
   
   $scope.cardOnMove = function(event) {
-    var card = $scope.cards[event.target.dataset.index]
-    card.x += event.dx
-    card.y += event.dy
+    var card = getBaseCard($scope.cards[event.target.dataset.index])
+    
+    // if ($scope.movestack) {
+      card = getBaseCard(card)
+      card.x += event.dx
+      card.y += event.dy
+      propagateUpXYZ(card)    
+    // } else {
+    //   card.x += event.dx
+    //   card.y += event.dy
+    // }
+    
     $scope.$apply()
   }
   
@@ -165,7 +221,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
         }
       }
     }
-    return shuffle(cards)
+    return cards
   }
   
 
@@ -227,33 +283,39 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       event.relatedTarget.classList.remove('can-drop')
 
       var card = $scope.cards[event.relatedTarget.dataset.index]
-      
-      //detach from previous card, if it exists
-      if (card.prev) {
-        card.prev.next = null
-        card.prev = null        
-      }
-      
+            
       if (event.target.classList.contains("zone-private")) {
-        card['zone'] = "private"
-        card.flipped = true
-        card.y = 730
+        changeStack(card,{'zone':'private','flipped':true})
       } else if (event.target.classList.contains("zone-fixed")) {
-        card['zone'] = "fixed"
-        card.y = 730
+        changeStack(card,{'zone':'fixed'})
       } else {
-        card['zone'] = "board"
+        changeStack(card,{'zone':'board'})
       }
-      console.log(card.zone)
-      
+    
       $scope.$apply()
-
-      // $scope.combineStacks(event.target,event.relatedTarget)
-      console.log('Dropped on zone')
+      
+      console.log('Dropped on zone ', card.zone)
     },
   })
   
 
+
+
+  function putCardsOnBoard(cardimages,x,y) {
+    cardimages = shuffle(cardimages)
+    
+    var card = null, prevcard = null
+    for (var i=0; i<cardimages.length; i++) {
+      card = {'x':x,'y':y,'src':cardimages[i], 'rotation':0, 'flipped':false, 'spread':false, 'prev':prevcard, 'next': null}
+      $scope.cards.push(card)
+      if (card.prev) {
+        card.prev.next = card
+      }
+      prevcard = card
+    }
+    snapToGrid(card)
+    $scope.$apply()
+  }
 
   var holder = document.querySelector('.zone-board')
   holder.ondragover = function(e) {
@@ -267,11 +329,8 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       var filename = e.dataTransfer.files[i].name
       if (filename.match(/\.txt$/)) {
         var fr = new FileReader()
-        fr.onload = function(e1) {
-          var importcards = $scope.importDeck(e1.target.result)
-          var importstack = {'x':e.x - 50,'y':e.y - 75,'cards':importcards, 'rotation':0, 'flipped':false, 'spread':false}
-          $scope.stacks.push(importstack)
-          $scope.$apply()          
+        fr.onload = function(e1) {          
+          putCardsOnBoard($scope.importDeck(e1.target.result),e.x - 50, e.y - 75)
         }
         fr.readAsText(e.dataTransfer.files[i])
       } else {
@@ -279,9 +338,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       }
     }
     if (cards.length > 0) {
-      var stack = {'x':e.x - 50,'y':e.y - 75,'cards':cards, 'rotation':0, 'flipped':false, 'spread':false}
-      $scope.stacks.push(stack)
-      $scope.$apply()
+      putCardsOnBoard(cards,e.x - 50,e.y - 75)
     }
   }
 })
