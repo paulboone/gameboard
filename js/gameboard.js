@@ -286,8 +286,12 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
             
       if (event.target.classList.contains("zone-private")) {
         changeStack(card,{'zone':'private','flipped':true})
+        getBaseCard(card).y = 730
+        snapToGrid(card)
       } else if (event.target.classList.contains("zone-fixed")) {
         changeStack(card,{'zone':'fixed'})
+        getBaseCard(card).y = 730
+        snapToGrid(card)
       } else {
         changeStack(card,{'zone':'board'})
       }
