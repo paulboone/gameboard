@@ -50,12 +50,17 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   
 
   function getBaseCard(card) {
-    var c = card;
-    
+    var c = card;    
     while (c.prev) {
       c = c.prev
     }
-    
+    return c
+  }
+  function getLastCard(card) {
+    var c = card;    
+    while (c.next) {
+      c = c.next
+    }
     return c
   }
   
@@ -66,7 +71,11 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
             
       c.x = c.prev.x + 8
       c.y = c.prev.y + 15
-      c.z = c.prev.z + 1      
+      c.z = c.prev.z + 1
+      if (c.z > $scope.zcounter) {
+        $scope.zcounter = c.z
+        console.log("zcounter ",$scope.zcounter)
+      }
     }
   }
 
@@ -103,11 +112,34 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     } while (card)    
   }
   
+  function printStack(card) {
+    var c = getBaseCard(card) 
+    var i = 0
+    do {
+      console.log(i++,c)
+      c = c.next
+    } while (c)
+  }
+  
+  function cardPartOfStack(card,stack) {
+    var c = getBaseCard(stack)
+    while (c.next) {
+      if (c.$$hashKey == card.$$hashKey) {
+        // console.log("match?",c,card, stack)
+        return true
+      }
+      c = c.next
+    }    
+    return false
+  }
+  
+  
   $scope.cardOnMoveStart = function(event) {
-    // duplicate stack underneath this one, leaving it in place, taking only the top card
-    console.log(event)
     var card = $scope.cards[event.target.dataset.index]
-    card.z = ++$scope.zcounter;
+    
+    
+    console.log("moving card", card)
+    
     
     if (! event.altKey) {
       // if we're part of a stack, we have to extract ourselves
@@ -127,8 +159,17 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       
       if (oldstackcard) {
         snapToGrid(oldstackcard)
+        console.log("oldstack:")
+        printStack(oldstackcard)
       }
+      
+      card.z = ++$scope.zcounter
+    } else {
+      card = getBaseCard(card)
+      card.z = ++$scope.zcounter
+      propagateUpXYZ(card)
     }
+    console.log("moving card (after extract)", card)
   }
   
   
@@ -160,11 +201,19 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   $scope.cardRotate = function(event) {
     var card = $scope.cards[event.currentTarget.dataset.index]
 
-    if ((card.zone != 'fixed') != event.altKey ) {
+    if (card.zone != 'fixed') {
       if (card.rotation == 0) {
-        card.rotation = 90
+        if (event.altKey) {
+          changeStack(card,{'rotation':90})
+        } else {
+          card.rotation = 90
+        }
       } else {
-        card.rotation = 0
+        if (event.altKey) {
+          changeStack(card,{'rotation':0})
+        } else {
+          card.rotation = 0
+        }
       }
       $scope.$apply()
     }
@@ -173,8 +222,11 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     console.log("stackFlip")
     var card = $scope.cards[event.currentTarget.dataset.index]
     if (card.zone != 'fixed') {
-      card.flipped = ! card.flipped
-
+      if (event.altKey) {
+        changeStack(card,{'flipped':! card.flipped})
+      } else {
+        card.flipped = ! card.flipped
+      }
     }  else { //fixed! don't flip, spread!
       // card.spread = ! card.spread
       // console.log("spread:",stack.spread)
@@ -183,24 +235,21 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   }
   
   $scope.addCardToStack = function(target, addl) {
-    var targetcard = $scope.cards[target.dataset.index],
+    var targetcard = getLastCard($scope.cards[target.dataset.index]),
         addlcard = $scope.cards[addl.dataset.index]
     
+    if (cardPartOfStack(addlcard,targetcard)) {
+      console.log("card already in stack!! STOPPING")
+      console.log("card ", addlcard)
+      printStack(targetcard)
+      return
+    } 
     console.log("dropping ", addlcard.src, " on ", targetcard.src)
     
     targetcard.next = addlcard
-    addlcard.prev = targetcard
-    
-    addlcard.x = targetcard.x + 8
-    addlcard.y = targetcard.y + 15
-    addlcard.z = targetcard.z + 1
-    
-    console.log("targetcard", targetcard)
-    console.log("addlcard", addlcard)
-    // RESET cards further on top
-    
-    // targetstack.cards.splice(0,0,addlstack.cards)    
-    // $scope.stacks.splice(addl.dataset.index,1)
+    addlcard.prev = targetcard  
+    propagateUpXYZ(addlcard)    
+        
     $scope.$apply()
   }
   
