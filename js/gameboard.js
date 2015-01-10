@@ -237,7 +237,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   
   $scope.addCardToStack = function(target, addl) {
     var targetcard = getLastCard($scope.cards[target.dataset.index]),
-        addlcard = $scope.cards[addl.dataset.index]
+        addlcard = getBaseCard($scope.cards[addl.dataset.index])
     
     if (cardPartOfStack(addlcard,targetcard)) {
       console.log("card already in stack!! STOPPING")
@@ -319,7 +319,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       
       changeStack(targetcard,{'selected':false})
       if (!cardPartOfStack(addlcard,targetcard)) {
-        $scope.addCardToStack(event.target,event.relatedTarget)  
+        $scope.addCardToStack(event.target,event.relatedTarget)
       }
       
       console.log('Dropped on card')
