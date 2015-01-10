@@ -122,14 +122,15 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   }
   
   function cardPartOfStack(card,stack) {
-    var c = getBaseCard(stack)
-    while (c.next) {
+    console.log("cardPartOfStack",card,stack)
+    var c = getBaseCard(stack)    
+    do {
       if (c.$$hashKey == card.$$hashKey) {
-        // console.log("match?",c,card, stack)
+        console.log("match?",c,card, stack)
         return true
       }
       c = c.next
-    }    
+    } while (c)
     return false
   }
   
@@ -296,19 +297,31 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     ondragenter: function (event) {
       var draggableElement = event.relatedTarget,
           dropzoneElement = event.target
-
-      // feedback the possibility of a drop
-      dropzoneElement.classList.add('drop-target')
-      draggableElement.classList.add('can-drop')
+      
+      var targetcard = getLastCard($scope.cards[event.target.dataset.index]),
+          addlcard = $scope.cards[event.relatedTarget.dataset.index]
+    
+      if (!cardPartOfStack(addlcard,targetcard)) {
+        changeStack(targetcard,{'selected':true})
+      }
     },
     ondragleave: function (event) {
-      event.target.classList.remove('drop-target')
-      event.relatedTarget.classList.remove('can-drop')
+      var targetcard = getLastCard($scope.cards[event.target.dataset.index]),
+          addlcard = $scope.cards[event.relatedTarget.dataset.index]
+      
+      if (!cardPartOfStack(addlcard,targetcard)) {
+        changeStack(targetcard,{'selected':false})
+      }
     },
     ondrop: function (event) {
-      event.target.classList.remove('drop-target')
-      event.relatedTarget.classList.remove('can-drop')
-      $scope.addCardToStack(event.target,event.relatedTarget)
+      var targetcard = $scope.cards[event.target.dataset.index],
+          addlcard = $scope.cards[event.relatedTarget.dataset.index]
+      
+      changeStack(targetcard,{'selected':false})
+      if (!cardPartOfStack(addlcard,targetcard)) {
+        $scope.addCardToStack(event.target,event.relatedTarget)  
+      }
+      
       console.log('Dropped on card')
     },
   })

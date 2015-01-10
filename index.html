@@ -16,7 +16,7 @@
     <div class="zone zone-private">
       <p>Hidden</p>
     </div>
-    <div class="draggable card" ng-repeat="card in cards" style="transform:translate({{card.x}}px,{{card.y}}px) rotate({{card.rotation}}deg); z-index: {{card.z}}" data-index="{{$index}}">
+    <div class="draggable card" ng-repeat="card in cards" ng-class="{'drop-target':card.selected}" style="transform:translate({{card.x}}px,{{card.y}}px) rotate({{card.rotation}}deg); z-index: {{card.z}}" data-index="{{$index}}">
       <img ng-src="cards/{{card.flipped ? card.src : '_back.jpg'}}" />
     </div>
   </div>
