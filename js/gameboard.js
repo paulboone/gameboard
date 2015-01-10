@@ -63,14 +63,29 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     }
     return c
   }
+  function getStackSize(card){
+    var c = getBaseCard(card)
+    var i = 0
+    while (c.next) {
+      i += 1
+      c = c.next
+    }
+    return i
+  }
   
-  function propagateUpXYZ(baseCard) {
+  function propagateUpXYZ(baseCard, spreadOverride) {
     var c = baseCard
+    var compact = spreadOverride ? false : getStackSize(c) > 10
     while (c.next) {
       c = c.next
             
-      c.x = c.prev.x + 8
-      c.y = c.prev.y + 15
+      if (compact) {
+        c.x = c.prev.x + 0.5
+        c.y = c.prev.y
+      } else {
+        c.x = c.prev.x + 8
+        c.y = c.prev.y + 15
+      }
       c.z = c.prev.z + 1
       if (c.z > $scope.zcounter) {
         $scope.zcounter = c.z
