@@ -104,7 +104,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
 
     while (c.next) {
       c = c.next
-      if (compact) {
+      if (compact || c.zone == 'fixed') {
         c.x = c.prev.x + 0.5
         c.y = c.prev.y
       } else {
@@ -218,13 +218,15 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     
     if (! card.next && ! card.prev) {
       if (card.xoffset) {
-        card.x += card.xoffset
+        // card.x += card.xoffset
         card.xoffset = 0
       }
       if (card.yoffset) {
-        card.y += card.yoffset
+        // card.y += card.yoffset
         card.yoffset = 0
-      }
+      } 
+    } else {
+      changeSpread(card,false)
     }
     
     snapToGrid(card)
