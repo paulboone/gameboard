@@ -21,13 +21,19 @@ function shuffle(array) {
 
 gameboardApp.controller('gameboardCtrl', function ($scope) {
   
-  $scope.zcounter = 0
-  $scope.movestack = false
-  $scope.cards = [
-    {'x':100,'y':100,'z':0, 'src': 'island1.jpg', 'rotation':0, 'flipped':false, 'spread':false, 'prev': null, 'next': null},
-    {'x':300,'y':100,'z':0, 'src': 'ainok tracker.jpg','rotation':0, 'flipped':true, 'spread':false, 'prev': null, 'next': null}
-  ]
-
+  /********************************************************************************************************/
+  /* card methods for extraction to card class                                                            */
+  
+  
+  function newCard(vars) {
+    var card = {'x':100,'y':100,'z':0, 'xoffset': 0, 'yoffset': 0,'src': 'island1.jpg', 'rotation':0, 'flipped':false, 'spread':false, 'prev': null, 'next': null}
+    for(var k in vars) {
+      console.log(k,card[k],vars[k])
+        card[k] = vars[k]
+    }
+    return card
+  }
+  
   function getBaseCard(card) {
     var c = card;    
     while (c.prev) {
@@ -51,29 +57,6 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     }
     return i
   }
-      
-  function changeSpread(card, spread) {
-    console.log('changeSpread',spread)
-    var last = getTopCard(card)
-    var base = getBaseCard(card)
-
-    base.spread = spread
-    if (!spread) {
-      changeStack(card,{'xoffset':0,'yoffset':0,flipped:false})
-    } else {
-      changeStack(card,{'flipped':true})
-      var i = 0
-      var c = last
-      while (c.prev) {
-        i += 1
-        c = c.prev
-        console.log(c, c.x, c.y, i)
-        c.x = c.x - 8 * i
-        c.y = c.y - 15 * i
-        console.log(c, c.x, c.y, i)
-      }
-    }
-  }
   
   /* From the base card in a stack (the bottome card), move the other cards in the stack to display properly, either by.
      1) for a compact stack, moving each card slightly to the right.
@@ -95,10 +78,16 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     var i = 0
     var startxoffset = 0
     var startyoffset = 0
+    var numCards = getStackSize(stack)
     if (options.reverse) {
-      startxoffset = -i * options.xoffset
-      startyoffset = -i * options.yoffset
+      startxoffset = -numCards * options.xoffset
+      startyoffset = -numCards * options.yoffset
     }
+    
+    // base card starts at 0
+    c.xoffset = 0
+    c.yoffset = 0
+    
     while (c.next) {
       c = c.next
       i += 1
@@ -182,112 +171,86 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     return false
   }
   
-  
-  $scope.cardOnMoveStart = function(event) {
-    var card = $scope.cards[event.target.dataset.index]
-    
-    if (! event.altKey) {
-      console.log("no extract code yet")
-      // if we're part of a stack, we have to extract ourselves
-      // var oldstackcard = null
-      // if (card.next) {
-      //   oldstackcard = card.next
-      //   card.next.prev = card.prev
-      // }
-      // if (card.prev) {
-      //   oldstackcard = card.prev
-      //   card.prev.next = card.next
-      // }
-      //
-      // card.prev = null
-      // card.next = null
-      //
-      // if (oldstackcard) {
-      //   changeSpread(oldstackcard,getBaseCard(oldstackcard).spread)
-      //   redrawStack(oldstackcard)
-      //   console.log("oldstack:")
-      //   printStack(oldstackcard)
-      // }
-      //
-      // card.z = ++$scope.zcounter
-      // $scope.$apply()
-    } else {
-      card = getBaseCard(card)
-      card.z = ++$scope.zcounter
-      redrawStack(card)
-    }
-    console.log("moving card (after extract)", card)
-  }
-  
-  
-  
-  $scope.cardOnMoveEnd = function(event) {
-    var card = $scope.cards[event.target.dataset.index]
-    
-    if (! card.next && ! card.prev) {
-      if (card.xoffset) {
-        card.x += card.xoffset
-        card.xoffset = 0
-      }
-      if (card.yoffset) {
-        card.y += card.yoffset
-        card.yoffset = 0
-      } 
-    } else {
-      changeSpread(card,false)
-    }
-    
-    snapToGrid(card)
-    
-    $scope.$apply()
-  }
-  
-  $scope.cardOnMove = function(event) {
-    var card = getBaseCard($scope.cards[event.target.dataset.index])
-
-    card = getBaseCard(card)
-    card.x += event.dx
-    card.y += event.dy
+  function moveStackToFront(stack) {
+    card = getBaseCard(stack)
+    card.z = ++$scope.zcounter
     redrawStack(card)
-    
-    $scope.$apply()
   }
   
-  $scope.cardRotate = function(event) {
-    var card = $scope.cards[event.currentTarget.dataset.index]
+  function cardRotate(card, options) {
+    var doStack = options.doStack
+    var rotation = options.rotation
+    if (doStack === undefined) {
+      doStack = false
+    }
+    if (rotation == undefined) {
+      rotation = (card.rotation == 0) ? 90 : 0
+    }
 
-    if (card.zone != 'fixed') {
-      if (card.rotation == 0) {
-        if (event.altKey) {
-          changeStack(card,{'rotation':90})
-        } else {
-          card.rotation = 90
-        }
-      } else {
-        if (event.altKey) {
-          changeStack(card,{'rotation':0})
-        } else {
-          card.rotation = 0
-        }
-      }
-      $scope.$apply()
+    // if (card.zone != 'fixed') {
+    if (doStack) {
+      changeStack(card,{'rotation':rotation})
+    } else {
+      card.rotation = rotation
+    }
+    // }
+    
+  }
+  
+  function extractCard(card) {
+    // connect up stack around card we are extracting
+    var oldstackcard = null
+    if (card.next) {
+      oldstackcard = card.next
+      card.next.prev = card.prev
+    }
+    if (card.prev) {
+      oldstackcard = card.prev
+      card.prev.next = card.next
+    }
+
+    // remove references to stack from card
+    card.prev = null
+    card.next = null
+    
+    // since this card is a single, roll the x- and y-yoffset into x & y
+    console.log(card, card.x, card.xoffset, card.x + card.xoffset)
+    card.x = card.x + card.xoffset
+    card.y = card.y + card.yoffset
+    card.xoffset = 0
+    card.yoffset = 0
+    console.log(card)
+
+    // if we actually extracted a card, redraw the stack
+    if (oldstackcard) {
+      redrawStack(oldstackcard)
     }
   }
-  $scope.stackFlip = function(event) {
-    console.log("stackFlip")
-    var card = $scope.cards[event.currentTarget.dataset.index]
+
+  function cardFlip(card, options) {
+    var doStack = options.doStack
+    var flipped = options.flipped
+    if (doStack === undefined) {
+      doStack = false
+    }
+    if (flipped == undefined) {
+      flipped = ! card.flipped
+    }
+
     // if (card.zone != 'fixed') {
-      if (event.altKey) {
-        changeStack(card,{'flipped':! card.flipped})
-      } else {
-        card.flipped = ! card.flipped
-      }
-    // }  else { //fixed! don't flip, spread!
-    //   var base = getBaseCard(card)
-    //   changeSpread(base,!base.spread)
-    //   redrawStack(base)
+    if (doStack) {
+      changeStack(card,{'flipped': flipped})
+    } else {
+      card.flipped = flipped
+    }
     // }
-    $scope.$apply()
+  }
+  
+  function stackMove(stack, x, y) {
+    var card = getBaseCard(stack)
+    card.x += x
+    card.y += y
+    redrawStack(card)
   }
   
   $scope.addCardToStack = function(target, addl) {
@@ -310,6 +273,22 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     $scope.$apply()
   }
   
+  /********************************************************************************************************/
+  /* default scopes                                                                                       */
+  
+  $scope.zcounter = 0
+  $scope.cards = [
+    newCard({'x':100,'y':100, 'src': 'island1.jpg'}),
+    newCard({'x':300,'y':100, 'src': 'ainok tracker.jpg'})
+  ]
+
+  
+  
+  
+  /********************************************************************************************************/
+  /* import decks                                                                                         */
+
+  
   $scope.importDeck = function(decklist) {
     var deckdefs = decklist.split("\n"),
         cards = [],
@@ -329,59 +308,120 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     }
     return cards
   }
-  
 
-  /* every card is draggable */
-  interact('.draggable')
+  function putCardsOnBoard(cardimages,x,y) {    
+    var card = null, prevcard = null
+    for (var i=0; i<cardimages.length; i++) {
+      card = newCard({'x':x,'y':y,'src':cardimages[i], 'prev':prevcard, 'next': null})
+      $scope.cards.push(card)
+      if (card.prev) {
+        card.prev.next = card
+      }
+      prevcard = card
+    }
+    snapToGrid(card)
+    $scope.$apply()
+  }
+
+  var holder = document.querySelector('.zone-board')
+  holder.ondragover = function(e) {
+    e.preventDefault()
+  }
+  holder.ondrop = function (e) {
+    e.preventDefault()
+
+    var cards = []
+    for (i=0;i<e.dataTransfer.files.length;i++) {
+      var filename = e.dataTransfer.files[i].name
+      if (filename.match(/\.txt$/)) {
+        var fr = new FileReader()
+        fr.onload = function(e1) {
+          putCardsOnBoard($scope.importDeck(e1.target.result),e.x - 50, e.y - 75)
+        }
+        fr.readAsText(e.dataTransfer.files[i])
+      } else {
+        cards.push(filename)
+      }
+    }
+    if (cards.length > 0) {
+      putCardsOnBoard(cards,e.x - 50,e.y - 75)
+    }
+  }
+
+  
+  /********************************************************************************************************/
+  /* interact event hooks                                                                                 */
+
+  // singular card stack events – every card stack is draggable
+  interact('.card')
     .draggable({
       restrict: {
         restriction: "parent",
         endOnly: true,
         elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
       },
-      onmove: $scope.cardOnMove,
-      onstart: $scope.cardOnMoveStart,
-      onend: $scope.cardOnMoveEnd
+      onstart: function(event) {
+        var card = $scope.cards[event.target.dataset.index]
+        if (! event.altKey) {
+          extractCard(card)
+        }
+        moveStackToFront(card)
+        $scope.$apply()
+      },
+      onmove: function(event) {
+        var card = $scope.cards[event.target.dataset.index]
+        stackMove(card, event.dx, event.dy)
+        $scope.$apply()
+      },
+      onend: function(event) {
+        var card = $scope.cards[event.target.dataset.index]
+        snapToGrid(card)
+        $scope.$apply()
+      }
     })
-    .on('tap',$scope.cardRotate)
-    .on('doubletap', $scope.stackFlip)
+    .on('tap', function(event) {
+      var card = $scope.cards[event.currentTarget.dataset.index]
+      cardRotate(card, {'doStack': event.altKey})
+      $scope.$apply()
+    })
+    .on('doubletap', function(event) {
+      var card = $scope.cards[event.currentTarget.dataset.index]
+      cardFlip(card, {'doStack': event.altKey})
+      $scope.$apply()
+    })
     
-  /* card on card drops */
-  interact('.draggable').dropzone({
+  // card stacks can be dropped on other card stacks */
+  interact('.card').dropzone({
     // Require a 50% element overlap for a drop to be possible
     overlap: 0.50,
 
     ondragenter: function (event) {
-      var draggableElement = event.relatedTarget,
-          dropzoneElement = event.target
-      
       var targetcard = getTopCard($scope.cards[event.target.dataset.index]),
-          addlcard = $scope.cards[event.relatedTarget.dataset.index]
+          draggingcard = $scope.cards[event.relatedTarget.dataset.index]
     
-      if (!cardPartOfStack(addlcard,targetcard)) {
+      if (!cardPartOfStack(draggingcard,targetcard)) {
         changeStack(targetcard,{'selected':true})
       }
+      $scope.$apply()
     },
     ondragleave: function (event) {
       var targetcard = getTopCard($scope.cards[event.target.dataset.index]),
-          addlcard = $scope.cards[event.relatedTarget.dataset.index]
+          draggingcard = $scope.cards[event.relatedTarget.dataset.index]
       
-      if (!cardPartOfStack(addlcard,targetcard)) {
+      if (!cardPartOfStack(draggingcard,targetcard)) {
         changeStack(targetcard,{'selected':false})
       }
+      $scope.$apply()
     },
     ondrop: function (event) {
       var targetcard = $scope.cards[event.target.dataset.index],
-          addlcard = $scope.cards[event.relatedTarget.dataset.index]
+          draggingcard = $scope.cards[event.relatedTarget.dataset.index]
       
       changeStack(targetcard,{'selected':false})
-      if (!cardPartOfStack(addlcard,targetcard)) {
+      if (!cardPartOfStack(draggingcard,targetcard)) {
         $scope.addCardToStack(event.target,event.relatedTarget)
-      } else {
-        console.log('part of stack')
       }
-      
-      console.log('Dropped on card')
+      $scope.$apply()
     },
   })
   
@@ -423,51 +463,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   //     console.log('Dropped on zone ', card.zone)
   //   },
   // })
-  
 
-
-
-  function putCardsOnBoard(cardimages,x,y) {
-    // TODO: maybe don't shuffle, just load in order
-    cardimages = shuffle(cardimages)
-    
-    var card = null, prevcard = null
-    for (var i=0; i<cardimages.length; i++) {
-      card = {'x':x,'y':y,'xoffset':0,'yoffset':0, 'src':cardimages[i], 'rotation':0, 'flipped':false, 'spread':false, 'prev':prevcard, 'next': null}
-      $scope.cards.push(card)
-      if (card.prev) {
-        card.prev.next = card
-      }
-      prevcard = card
-    }
-    snapToGrid(card)
-    $scope.$apply()
-  }
-
-  var holder = document.querySelector('.zone-board')
-  holder.ondragover = function(e) {
-    e.preventDefault()
-  }
-  holder.ondrop = function (e) {
-    e.preventDefault()
-
-    var cards = []
-    for (i=0;i<e.dataTransfer.files.length;i++) {
-      var filename = e.dataTransfer.files[i].name
-      if (filename.match(/\.txt$/)) {
-        var fr = new FileReader()
-        fr.onload = function(e1) {          
-          putCardsOnBoard($scope.importDeck(e1.target.result),e.x - 50, e.y - 75)
-        }
-        fr.readAsText(e.dataTransfer.files[i])
-      } else {
-        cards.push(filename)  
-      }
-    }
-    if (cards.length > 0) {
-      putCardsOnBoard(cards,e.x - 50,e.y - 75)
-    }
-  }
 })
 
 

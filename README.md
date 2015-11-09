@@ -10,16 +10,12 @@ TODO:
 
 De-complexify:
 
-- TODO: don't automatically shuffle on load cards?
 - TODO: some sort of zone hierarchy display options so we don't have to explicitly check for zone position, i.e. (compact || c.zone == 'fixed'))
-- TODO: remove xoffset / yoffset; just use x/y?
 - TODO: clean up zcounter stuff somehow.
 
 Refactor for underestandability:
 
 - TODO: use actual object of some sort for card, so creation is more determinative?
-- TODO: separate out interface functions from board methods (i.e. cardOnMoveStart having two definitions, depending on whether the alt key is pressed)
-- TODO: cardOnMoveStart needs an extractCard function
 
 Bugs:
 
