@@ -19,10 +19,6 @@ function shuffle(array) {
   return array;
 }
 
-// gameboardApp.directive('stackStyle', function(a) {
-//   return "test"
-// })
-
 gameboardApp.controller('gameboardCtrl', function ($scope) {
   
   $scope.zcounter = 0
@@ -75,28 +71,12 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
         c.yoffset = -15 * i
       }
     }
-    // base.spread = spread
-    // if (spread) {
-    //   last.x = base.x
-    //   last.y = base.y
-    // } else {
-    //   base.x = last.x
-    //   base.y = last.y
-    // }
   }
-    
-  // function spreadXYZ(card) {
-  //   console.log("spreadXYZ")
-  //   var last = getLastCard(card)
-  //   var base = getBaseCard(card)
-  //   var c = last
-  //
-  //   // last.x = base.x
-  //   // last.y = base.y
-  //
-  //   changeStack(base,{'flipped':true})
-  // }
   
+  /* From the base card in a stack (the bottome card), move the other cards in the stack to display properly, either by.
+     1) for a compact stack, moving each card slightly to the right.
+     2) for a spread stack, moving each card down and to the right.
+  */
   function propagateUpXYZ(card) {
     var baseCard = getBaseCard(card)
     var c = baseCard
@@ -240,7 +220,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     card = getBaseCard(card)
     card.x += event.dx
     card.y += event.dy
-    propagateUpXYZ(card)    
+    propagateUpXYZ(card)
     
     $scope.$apply()
   }
@@ -418,6 +398,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
 
 
   function putCardsOnBoard(cardimages,x,y) {
+    // TODO: maybe don't shuffle, just load in order
     cardimages = shuffle(cardimages)
     
     var card = null, prevcard = null
