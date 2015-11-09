@@ -10,12 +10,12 @@
 <body ng-controller="gameboardCtrl">  
     
   <div class="zone zone-board">
-    <div class="zone zone-fixed">
+    <!-- <div class="zone zone-fixed">
       <p>Fixed</p>
     </div>
     <div class="zone zone-private">
       <p>Hidden</p>
-    </div>
+    </div> -->
     <div class="draggable card" ng-repeat="card in cards" ng-class="{'drop-target':card.selected}" style="transform:translate({{card.x + card.xoffset}}px,{{card.y + card.yoffset}}px) rotate({{card.rotation}}deg); z-index: {{card.z}}" data-index="{{$index}}">
       <img ng-src="cards/{{card.flipped ? card.src : '_back.jpg'}}" />
     </div>

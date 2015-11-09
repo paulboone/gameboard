@@ -13,6 +13,8 @@ De-complexify:
 - TODO: don't automatically shuffle on load cards?
 - TODO: some sort of zone hierarchy display options so we don't have to explicitly check for zone position, i.e. (compact || c.zone == 'fixed'))
 - TODO: remove xoffset / yoffset; just use x/y?
+- TODO: clean up zcounter stuff somehow.
+
 Refactor for underestandability:
 
 - TODO: use actual object of some sort for card, so creation is more determinative?
@@ -37,3 +39,24 @@ Bugs:
 - scale the game board styles (not use fixed pixels)
 - some means of coordinating display size between two people?
 - full-screen mode
+
+
+## Code Documentation
+
+- cards are arranged in stacks. 
+- in a stack, the "base" card is the one on the bottom (which has the lowest z-index).
+- it is the base card that snaps to a grid.
+- each card placed onto another card is offset down and to the right (and to a higher z-index), by default.
+- if a stack is more than 10 cards, than it is arranged as a conpact stack, which is just each card is placed slightly (~ 0.5px) to the right.
+- a spread stack is arranged the same way as a default stack, except in reverse, so:
+  - it is aligned according to the top card, not the base card.
+  - the stack is offset up and to the left, instead of down and to the right.
+- when the spread stack is unspread, the base card should still be aligned with the grid.
+  
+
+## Plan
+
+- drag and drop individual cards, snap to grid
+- stack cards on top of one another, linked list should work.
+- change stack display mode to default, compact, reverse default.
+

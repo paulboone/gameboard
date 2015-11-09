@@ -35,7 +35,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     }
     return c
   }
-  function getLastCard(card) {
+  function getTopCard(card) {
     var c = card;    
     while (c.next) {
       c = c.next
@@ -54,7 +54,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       
   function changeSpread(card, spread) {
     console.log('changeSpread',spread)
-    var last = getLastCard(card)
+    var last = getTopCard(card)
     var base = getBaseCard(card)
 
     base.spread = spread
@@ -67,8 +67,10 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       while (c.prev) {
         i += 1
         c = c.prev
-        c.xoffset = -8 * i
-        c.yoffset = -15 * i
+        console.log(c, c.x, c.y, i)
+        c.x = c.x - 8 * i
+        c.y = c.y - 15 * i
+        console.log(c, c.x, c.y, i)
       }
     }
   }
@@ -77,27 +79,52 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
      1) for a compact stack, moving each card slightly to the right.
      2) for a spread stack, moving each card down and to the right.
   */
-  function propagateUpXYZ(card) {
-    var baseCard = getBaseCard(card)
-    var c = baseCard
+  function redrawStack(stack) {
+    var baseCard = getBaseCard(stack)
     var compact = getStackSize(baseCard) > 10
-
+    
+    if (compact || baseCard.zone == 'fixed') {
+      showStackAsCompact(baseCard)
+    } else {
+      showStackAsDefault(baseCard)
+    }
+  }
+  
+  function offsetStackCards(stack, options) {
+    var c = getBaseCard(stack)
+    var i = 0
+    var startxoffset = 0
+    var startyoffset = 0
+    if (options.reverse) {
+      startxoffset = -i * options.xoffset
+      startyoffset = -i * options.yoffset
+    }
     while (c.next) {
       c = c.next
-      if (compact || c.zone == 'fixed') {
-        c.x = c.prev.x + 0.5
-        c.y = c.prev.y
-      } else {
-        c.x = c.prev.x + 8
-        c.y = c.prev.y + 15
-      }
+      i += 1
+      c.x = c.prev.x
+      c.y = c.prev.y
       c.z = c.prev.z + 1
+      c.xoffset = startxoffset + i * options.xoffset
+      c.yoffset = startyoffset + i * options.yoffset
     
       if (c.z > $scope.zcounter) {
         $scope.zcounter = c.z
         console.log("zcounter ",$scope.zcounter)
       }
     }
+  }
+  
+  function showStackAsDefault(stack) {
+    offsetStackCards(stack,{'xoffset':8, 'yoffset':15})
+  }
+  
+  function showStackAsCompact(stack) {
+    offsetStackCards(stack,{'xoffset':0.5, 'yoffset':0})
+  }
+  
+  function showStackAsReverseDefault(stack) {
+    offsetStackCards(stack,{'xoffset':8, 'yoffset':15, 'reverse': true})
   }
 
   function snapToGrid(card) {
@@ -119,7 +146,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       card.x = div * gridsize
     }
     
-    propagateUpXYZ(card)
+    redrawStack(card)
   }
   
   function changeStack(card,vars) {
@@ -160,33 +187,34 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     var card = $scope.cards[event.target.dataset.index]
     
     if (! event.altKey) {
+      console.log("no extract code yet")
       // if we're part of a stack, we have to extract ourselves
-      var oldstackcard = null
-      if (card.next) {
-        oldstackcard = card.next
-        card.next.prev = card.prev
-      }
-      if (card.prev) {
-        oldstackcard = card.prev
-        card.prev.next = card.next
-      }
-        
-      card.prev = null
-      card.next = null
-      
-      if (oldstackcard) {
-        changeSpread(oldstackcard,getBaseCard(oldstackcard).spread)
-        propagateUpXYZ(oldstackcard)
-        console.log("oldstack:")
-        printStack(oldstackcard)
-      }
-      
-      card.z = ++$scope.zcounter
-      $scope.$apply()
+      // var oldstackcard = null
+      // if (card.next) {
+      //   oldstackcard = card.next
+      //   card.next.prev = card.prev
+      // }
+      // if (card.prev) {
+      //   oldstackcard = card.prev
+      //   card.prev.next = card.next
+      // }
+      //
+      // card.prev = null
+      // card.next = null
+      //
+      // if (oldstackcard) {
+      //   changeSpread(oldstackcard,getBaseCard(oldstackcard).spread)
+      //   redrawStack(oldstackcard)
+      //   console.log("oldstack:")
+      //   printStack(oldstackcard)
+      // }
+      //
+      // card.z = ++$scope.zcounter
+      // $scope.$apply()
     } else {
       card = getBaseCard(card)
       card.z = ++$scope.zcounter
-      propagateUpXYZ(card)
+      redrawStack(card)
     }
     console.log("moving card (after extract)", card)
   }
@@ -220,7 +248,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     card = getBaseCard(card)
     card.x += event.dx
     card.y += event.dy
-    propagateUpXYZ(card)
+    redrawStack(card)
     
     $scope.$apply()
   }
@@ -248,22 +276,22 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   $scope.stackFlip = function(event) {
     console.log("stackFlip")
     var card = $scope.cards[event.currentTarget.dataset.index]
-    if (card.zone != 'fixed') {
+    // if (card.zone != 'fixed') {
       if (event.altKey) {
         changeStack(card,{'flipped':! card.flipped})
       } else {
         card.flipped = ! card.flipped
       }
-    }  else { //fixed! don't flip, spread!
-      var base = getBaseCard(card)
-      changeSpread(base,!base.spread)
-      propagateUpXYZ(base)
-    }
+    // }  else { //fixed! don't flip, spread!
+    //   var base = getBaseCard(card)
+    //   changeSpread(base,!base.spread)
+    //   redrawStack(base)
+    // }
     $scope.$apply()
   }
   
   $scope.addCardToStack = function(target, addl) {
-    var targetcard = getLastCard($scope.cards[target.dataset.index]),
+    var targetcard = getTopCard($scope.cards[target.dataset.index]),
         addlcard = getBaseCard($scope.cards[addl.dataset.index])
     
     if (cardPartOfStack(addlcard,targetcard)) {
@@ -276,7 +304,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     
     targetcard.next = addlcard
     addlcard.prev = targetcard
-    propagateUpXYZ(addlcard)
+    redrawStack(addlcard)
     changeStack(addlcard,{'zone':targetcard.zone})
   
     $scope.$apply()
@@ -303,6 +331,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   }
   
 
+  /* every card is draggable */
   interact('.draggable')
     .draggable({
       restrict: {
@@ -317,7 +346,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     .on('tap',$scope.cardRotate)
     .on('doubletap', $scope.stackFlip)
     
-  // card on card interactions
+  /* card on card drops */
   interact('.draggable').dropzone({
     // Require a 50% element overlap for a drop to be possible
     overlap: 0.50,
@@ -326,7 +355,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       var draggableElement = event.relatedTarget,
           dropzoneElement = event.target
       
-      var targetcard = getLastCard($scope.cards[event.target.dataset.index]),
+      var targetcard = getTopCard($scope.cards[event.target.dataset.index]),
           addlcard = $scope.cards[event.relatedTarget.dataset.index]
     
       if (!cardPartOfStack(addlcard,targetcard)) {
@@ -334,7 +363,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       }
     },
     ondragleave: function (event) {
-      var targetcard = getLastCard($scope.cards[event.target.dataset.index]),
+      var targetcard = getTopCard($scope.cards[event.target.dataset.index]),
           addlcard = $scope.cards[event.relatedTarget.dataset.index]
       
       if (!cardPartOfStack(addlcard,targetcard)) {
@@ -356,43 +385,44 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     },
   })
   
-  interact('.zone').dropzone({
-    ondragenter: function (event) {
-      var draggableElement = event.relatedTarget,
-          dropzoneElement = event.target
-
-      if (! dropzoneElement.classList.contains("zone-board")) {
-        dropzoneElement.classList.add('drop-target')
-        draggableElement.classList.add('can-drop')
-      }
-    },
-    ondragleave: function (event) {
-      event.target.classList.remove('drop-target')
-      event.relatedTarget.classList.remove('can-drop')
-    },
-    ondrop: function (event) {
-      event.target.classList.remove('drop-target')
-      event.relatedTarget.classList.remove('can-drop')
-
-      var card = $scope.cards[event.relatedTarget.dataset.index]
-            
-      if (event.target.classList.contains("zone-private")) {
-        changeStack(card,{'zone':'private','flipped':true})
-        getBaseCard(card).y = 730
-        snapToGrid(card)
-      } else if (event.target.classList.contains("zone-fixed")) {
-        changeStack(card,{'zone':'fixed'})
-        getBaseCard(card).y = 730
-        snapToGrid(card)
-      } else {
-        changeStack(card,{'zone':'board'})
-      }
-    
-      $scope.$apply()
-      
-      console.log('Dropped on zone ', card.zone)
-    },
-  })
+  /* card on zone drops */
+  // interact('.zone').dropzone({
+  //   ondragenter: function (event) {
+  //     var draggableElement = event.relatedTarget,
+  //         dropzoneElement = event.target
+  //
+  //     if (! dropzoneElement.classList.contains("zone-board")) {
+  //       dropzoneElement.classList.add('drop-target')
+  //       draggableElement.classList.add('can-drop')
+  //     }
+  //   },
+  //   ondragleave: function (event) {
+  //     event.target.classList.remove('drop-target')
+  //     event.relatedTarget.classList.remove('can-drop')
+  //   },
+  //   ondrop: function (event) {
+  //     event.target.classList.remove('drop-target')
+  //     event.relatedTarget.classList.remove('can-drop')
+  //
+  //     var card = $scope.cards[event.relatedTarget.dataset.index]
+  //
+  //     if (event.target.classList.contains("zone-private")) {
+  //       changeStack(card,{'zone':'private','flipped':true})
+  //       getBaseCard(card).y = 730
+  //       snapToGrid(card)
+  //     } else if (event.target.classList.contains("zone-fixed")) {
+  //       changeStack(card,{'zone':'fixed'})
+  //       getBaseCard(card).y = 730
+  //       snapToGrid(card)
+  //     } else {
+  //       changeStack(card,{'zone':'board'})
+  //     }
+  //
+  //     $scope.$apply()
+  //
+  //     console.log('Dropped on zone ', card.zone)
+  //   },
+  // })
   
 
 
