@@ -198,11 +198,11 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     
     if (! card.next && ! card.prev) {
       if (card.xoffset) {
-        // card.x += card.xoffset
+        card.x += card.xoffset
         card.xoffset = 0
       }
       if (card.yoffset) {
-        // card.y += card.yoffset
+        card.y += card.yoffset
         card.yoffset = 0
       } 
     } else {
