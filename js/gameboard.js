@@ -62,7 +62,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
      1) for a compact stack, moving each card slightly to the right.
      2) for a spread stack, moving each card down and to the right.
   */
-  function redrawStack(stack) {
+  function repositionStack(stack) {
     var baseCard = getBaseCard(stack)
     var compact = getStackSize(baseCard) > 10
     
@@ -96,11 +96,6 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       c.z = c.prev.z + 1
       c.xoffset = startxoffset + i * options.xoffset
       c.yoffset = startyoffset + i * options.yoffset
-    
-      if (c.z > $scope.zcounter) {
-        $scope.zcounter = c.z
-        console.log("zcounter ",$scope.zcounter)
-      }
     }
   }
   
@@ -135,7 +130,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       card.x = div * gridsize
     }
     
-    redrawStack(card)
+    repositionStack(card)
   }
   
   function changeStack(card,vars) {
@@ -170,13 +165,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     } while (c)
     return false
   }
-  
-  function moveStackToFront(stack) {
-    card = getBaseCard(stack)
-    card.z = ++$scope.zcounter
-    redrawStack(card)
-  }
-  
+    
   function cardRotate(card, options) {
     var doStack = options.doStack
     var rotation = options.rotation
@@ -196,6 +185,33 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     // }
     
   }
+
+  function cardFlip(card, options) {
+    var doStack = options.doStack
+    var flipped = options.flipped
+    if (doStack === undefined) {
+      doStack = false
+    }
+    if (flipped == undefined) {
+      flipped = ! card.flipped
+    }
+
+    // if (card.zone != 'fixed') {
+    if (doStack) {
+      changeStack(card,{'flipped': flipped})
+    } else {
+      card.flipped = flipped
+    }
+    // }
+  }
+  
+  function stackMove(stack, x, y) {
+    var card = getBaseCard(stack)
+    card.x += x
+    card.y += y
+    repositionStack(card)
+  }
+  
   
   function extractCard(card) {
     // connect up stack around card we are extracting
@@ -223,67 +239,53 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
 
     // if we actually extracted a card, redraw the stack
     if (oldstackcard) {
-      redrawStack(oldstackcard)
+      repositionStack(oldstackcard)
     }
   }
-
-  function cardFlip(card, options) {
-    var doStack = options.doStack
-    var flipped = options.flipped
-    if (doStack === undefined) {
-      doStack = false
-    }
-    if (flipped == undefined) {
-      flipped = ! card.flipped
-    }
-
-    // if (card.zone != 'fixed') {
-    if (doStack) {
-      changeStack(card,{'flipped': flipped})
-    } else {
-      card.flipped = flipped
-    }
+  
+  function appendStack(stack, stackToAppend) {
+    //
+    // if (cardPartOfStack(card,targetcard)) {
+    //   console.log("card already in stack!! STOPPING")
+    //   console.log("card ", addlcard)
+    //   printStack(targetcard)
+    //   return
     // }
-  }
-  
-  function stackMove(stack, x, y) {
-    var card = getBaseCard(stack)
-    card.x += x
-    card.y += y
-    redrawStack(card)
-  }
-  
-  $scope.addCardToStack = function(target, addl) {
-    var targetcard = getTopCard($scope.cards[target.dataset.index]),
-        addlcard = getBaseCard($scope.cards[addl.dataset.index])
+    var stack1 = getTopCard(stack)
+    var stack2 = getBaseCard(stackToAppend)
     
-    if (cardPartOfStack(addlcard,targetcard)) {
-      console.log("card already in stack!! STOPPING")
-      console.log("card ", addlcard)
-      printStack(targetcard)
-      return
-    } 
-    console.log("dropping ", addlcard.src, " on ", targetcard.src)
+    console.log("dropping ", stack2.src, " on ", stack1.src)
     
-    targetcard.next = addlcard
-    addlcard.prev = targetcard
-    redrawStack(addlcard)
-    changeStack(addlcard,{'zone':targetcard.zone})
-  
-    $scope.$apply()
+    stack1.next = stack2
+    stack2.prev = stack1
+    repositionStack(stack1)
+    changeStack(stack2,{'zone':stack1.zone})
   }
+  
   
   /********************************************************************************************************/
   /* default scopes                                                                                       */
   
-  $scope.zcounter = 0
+  // $scope.zcounter = 0
   $scope.cards = [
     newCard({'x':100,'y':100, 'src': 'island1.jpg'}),
     newCard({'x':300,'y':100, 'src': 'ainok tracker.jpg'})
   ]
 
-  
-  
+
+  function getMaxZ() {
+    var maxZ = 0
+    for (var i=0; i<$scope.cards.length; i++) {
+      maxZ = Math.max(maxZ, $scope.cards[i].z)
+    }
+    return maxZ
+  }
+
+  function moveStackToFront(stack) {
+    var card = getBaseCard(stack)
+    card.z = getMaxZ() + 1
+    repositionStack(card)
+  }
   
   /********************************************************************************************************/
   /* import decks                                                                                         */
@@ -419,7 +421,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       
       changeStack(targetcard,{'selected':false})
       if (!cardPartOfStack(draggingcard,targetcard)) {
-        $scope.addCardToStack(event.target,event.relatedTarget)
+        appendStack(targetcard,draggingcard)
       }
       $scope.$apply()
     },

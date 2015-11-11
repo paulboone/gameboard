@@ -7,6 +7,7 @@ TODO:
 
 - put image source url at top of deck file
 - use images from online source?
+- better highlighting for compact stacks–use an alpha mask?
 
 De-complexify:
 
