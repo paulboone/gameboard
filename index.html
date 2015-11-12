@@ -2,7 +2,8 @@
 <html ng-app="gameboardApp">
 <head>
   <title>gameboard</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.8/angular.min.js"></script>
+  <script src="js/angular.min.js"></script>
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.8/angular.min.js"></script> -->
   <script src="js/interact-1.2.0.js"></script>
   <script src="js/gameboard.js"></script>
   <link href="css/default.css" rel="stylesheet" type="text/css" media="screen" />
@@ -10,12 +11,12 @@
 <body ng-controller="gameboardCtrl">  
     
   <div class="zone zone-board">
-    <!-- <div class="zone zone-fixed">
+    <div class="zone zone-fixed">
       <p>Fixed</p>
     </div>
     <div class="zone zone-private">
       <p>Hidden</p>
-    </div> -->
+    </div>
     <div class="draggable card" ng-repeat="card in cards" ng-class="{'drop-target':card.selected}" style="transform:translate({{card.x + card.xoffset}}px,{{card.y + card.yoffset}}px) rotate({{card.rotation}}deg); z-index: {{card.z}}" data-index="{{$index}}">
       <img ng-src="cards/{{card.flipped ? card.src : '_back.jpg'}}" />
     </div>
@@ -24,7 +25,7 @@
   <a>{{test()}}</a>
   <p>debug list</p>
   <ul>
-    <li ng-repeat="card in cards">{{card.x}}/{{card.y}}:{{card.src}}</li>
+    <li ng-repeat="card in cards">{{card.x}}/{{card.y}}:{{card.src}}; {{card.stackgroup.xid}}</li>
   </ul>
   
 </body>

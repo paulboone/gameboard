@@ -24,13 +24,31 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   /********************************************************************************************************/
   /* card methods for extraction to card class                                                            */
   
+  function newStackgroup(vars) {
+    var stackgroup = {'display': 'default', xid: Math.trunc(Math.random() * 10000)}
+    for(var k in vars) { card[k] = vars[k] }
+    return stackgroup
+  }
   
   function newCard(vars) {
-    var card = {'x':100,'y':100,'z':0, 'xoffset': 0, 'yoffset': 0,'src': 'island1.jpg', 'rotation':0, 'flipped':false, 'spread':false, 'prev': null, 'next': null}
+    var card = {'x':100,'y':100,'z':0, 'xoffset': 0, 'yoffset': 0, 'rotation':0,
+                'src': 'island1.jpg',  'flipped':false,
+                'prev': null, 'next': null,
+                'stackgroup': null
+                }
     for(var k in vars) {
-      console.log(k,card[k],vars[k])
-        card[k] = vars[k]
+      card[k] = vars[k]
     }
+    if (! card.stackgroup) {
+      if (card.prev) {
+        card.stackgroup = card.prev.stackgroup
+      } else if (card.next) {
+        card.stackgroup = card.next.stackgroup
+      } else {
+        card.stackgroup = newStackgroup()
+      }
+    }
+    
     return card
   }
   
@@ -58,15 +76,17 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     return i
   }
   
-  /* From the base card in a stack (the bottome card), move the other cards in the stack to display properly, either by.
+  /* From the base card in a stack (the bottom card), move the other cards in the stack to display properly, either by...
      1) for a compact stack, moving each card slightly to the right.
      2) for a spread stack, moving each card down and to the right.
   */
-  function repositionStack(stack) {
+  function repositionStack(stack, displayOverride) {
     var baseCard = getBaseCard(stack)
     var compact = getStackSize(baseCard) > 10
     
-    if (compact || baseCard.zone == 'fixed') {
+    if (displayOverride == 'reverse') {
+      showStackAsReverseDefault(baseCard)
+    } else if (displayOverride == 'compact' || compact || baseCard.zone == 'fixed') {
       showStackAsCompact(baseCard)
     } else {
       showStackAsDefault(baseCard)
@@ -176,14 +196,11 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       rotation = (card.rotation == 0) ? 90 : 0
     }
 
-    // if (card.zone != 'fixed') {
     if (doStack) {
       changeStack(card,{'rotation':rotation})
     } else {
       card.rotation = rotation
     }
-    // }
-    
   }
 
   function cardFlip(card, options) {
@@ -196,12 +213,15 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       flipped = ! card.flipped
     }
 
-    // if (card.zone != 'fixed') {
     if (doStack) {
       changeStack(card,{'flipped': flipped})
+      
     } else {
       card.flipped = flipped
     }
+    
+    // if (flipped && card.zone == 'fixed') {
+    //   showStackAsReverseDefault(card)
     // }
   }
   
@@ -244,7 +264,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   }
   
   function appendStack(stack, stackToAppend) {
-    //
+    // // PARANOID CHECK scheduled for removal
     // if (cardPartOfStack(card,targetcard)) {
     //   console.log("card already in stack!! STOPPING")
     //   console.log("card ", addlcard)
@@ -259,18 +279,21 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     stack1.next = stack2
     stack2.prev = stack1
     repositionStack(stack1)
-    changeStack(stack2,{'zone':stack1.zone})
+    changeStack(stack2,{'zone':stack1.zone, 'stackgroup': stack1.stackgroup})
   }
   
   
   /********************************************************************************************************/
   /* default scopes                                                                                       */
   
-  // $scope.zcounter = 0
+  // $scope.zcounter = 0  
+  
   $scope.cards = [
     newCard({'x':100,'y':100, 'src': 'island1.jpg'}),
     newCard({'x':300,'y':100, 'src': 'ainok tracker.jpg'})
   ]
+  
+  
 
 
   function getMaxZ() {
@@ -311,7 +334,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     return cards
   }
 
-  function putCardsOnBoard(cardimages,x,y) {    
+  function putCardsOnBoard(cardimages,x,y) {
     var card = null, prevcard = null
     for (var i=0; i<cardimages.length; i++) {
       card = newCard({'x':x,'y':y,'src':cardimages[i], 'prev':prevcard, 'next': null})
@@ -389,6 +412,9 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     .on('doubletap', function(event) {
       var card = $scope.cards[event.currentTarget.dataset.index]
       cardFlip(card, {'doStack': event.altKey})
+      if (event.shiftKey) {
+        repositionStack(card,'reverse')
+      }
       $scope.$apply()
     })
     
@@ -427,45 +453,46 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     },
   })
   
-  /* card on zone drops */
-  // interact('.zone').dropzone({
-  //   ondragenter: function (event) {
-  //     var draggableElement = event.relatedTarget,
-  //         dropzoneElement = event.target
-  //
-  //     if (! dropzoneElement.classList.contains("zone-board")) {
-  //       dropzoneElement.classList.add('drop-target')
-  //       draggableElement.classList.add('can-drop')
-  //     }
-  //   },
-  //   ondragleave: function (event) {
-  //     event.target.classList.remove('drop-target')
-  //     event.relatedTarget.classList.remove('can-drop')
-  //   },
-  //   ondrop: function (event) {
-  //     event.target.classList.remove('drop-target')
-  //     event.relatedTarget.classList.remove('can-drop')
-  //
-  //     var card = $scope.cards[event.relatedTarget.dataset.index]
-  //
-  //     if (event.target.classList.contains("zone-private")) {
-  //       changeStack(card,{'zone':'private','flipped':true})
-  //       getBaseCard(card).y = 730
-  //       snapToGrid(card)
-  //     } else if (event.target.classList.contains("zone-fixed")) {
-  //       changeStack(card,{'zone':'fixed'})
-  //       getBaseCard(card).y = 730
-  //       snapToGrid(card)
-  //     } else {
-  //       changeStack(card,{'zone':'board'})
-  //     }
-  //
-  //     $scope.$apply()
-  //
-  //     console.log('Dropped on zone ', card.zone)
-  //   },
-  // })
+  // cards can be dropped on zones
+  interact('.zone').dropzone({
+    ondragenter: function (event) {
+      var draggableElement = event.relatedTarget,
+          dropzoneElement = event.target
 
+      if (! dropzoneElement.classList.contains("zone-board")) {
+        dropzoneElement.classList.add('drop-target')
+        draggableElement.classList.add('can-drop')
+      }
+    },
+    ondragleave: function (event) {
+      event.target.classList.remove('drop-target')
+      event.relatedTarget.classList.remove('can-drop')
+    },
+    ondrop: function (event) {
+      event.target.classList.remove('drop-target')
+      event.relatedTarget.classList.remove('can-drop')
+
+      var card = $scope.cards[event.relatedTarget.dataset.index]
+      
+      if (event.target.classList.contains("zone-private")) {
+        // all cards in private zone start face up
+        changeStack(card,{'zone': 'private','flipped':true})
+        // all cards in private zone are snapped to y
+        getBaseCard(card).y = 730
+        snapToGrid(card)
+      } else if (event.target.classList.contains("zone-fixed")) {
+        changeStack(card,{'zone':'fixed'})
+        // all cards in private zone are snapped to y
+        getBaseCard(card).y = 730
+        snapToGrid(card)
+      } else {
+        changeStack(card,{'zone':'board'})
+      }
+
+      $scope.$apply()
+      console.log('Dropped on zone ', card.zone)
+    },
+  })
 })
 
 
