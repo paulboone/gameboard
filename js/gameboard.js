@@ -80,16 +80,15 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
      1) for a compact stack, moving each card slightly to the right.
      2) for a spread stack, moving each card down and to the right.
   */
-  function repositionStack(stack, displayOverride) {
-    var baseCard = getBaseCard(stack)
-    var compact = getStackSize(baseCard) > 10
-    
-    if (displayOverride == 'reverse') {
-      showStackAsReverseDefault(baseCard)
-    } else if (displayOverride == 'compact' || compact || baseCard.zone == 'fixed') {
-      showStackAsCompact(baseCard)
-    } else {
-      showStackAsDefault(baseCard)
+  function repositionStack(stack) {
+    if (stack.stackgroup.display == 'default') {
+      if (getStackSize(stack) > 10 || stack.zone == 'fixed') {
+        showStackAsCompact(stack)
+      } else {
+        showStackAsDefault(stack)
+      }
+    } else if (stack.stackgroup.display == 'spread') {
+      showStackAsReverseDefault(stack)
     }
   }
   
@@ -234,31 +233,28 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   
   
   function extractCard(card) {
-    // connect up stack around card we are extracting
-    var oldstackcard = null
-    if (card.next) {
-      oldstackcard = card.next
-      card.next.prev = card.prev
-    }
-    if (card.prev) {
-      oldstackcard = card.prev
-      card.prev.next = card.next
-    }
-
-    // remove references to stack from card
-    card.prev = null
-    card.next = null
-    
-    // since this card is a single, roll the x- and y-yoffset into x & y
-    console.log(card, card.x, card.xoffset, card.x + card.xoffset)
-    card.x = card.x + card.xoffset
-    card.y = card.y + card.yoffset
-    card.xoffset = 0
-    card.yoffset = 0
-    console.log(card)
-
-    // if we actually extracted a card, redraw the stack
+    var oldstackcard = card.next || card.prev
     if (oldstackcard) {
+      // connect up stack around card we are extracting
+      if (card.next) {
+        card.next.prev = card.prev
+      }
+      if (card.prev) {
+        card.prev.next = card.next
+      }
+
+      // remove references to stack from card
+      card.prev = null
+      card.next = null
+      card.stackgroup = newStackgroup()
+    
+      // since this card is a single, roll the x- and y-yoffset into x & y
+      card.x = card.x + card.xoffset
+      card.y = card.y + card.yoffset
+      card.xoffset = 0
+      card.yoffset = 0
+
+      // redraw the old stack
       repositionStack(oldstackcard)
     }
   }
@@ -413,7 +409,12 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       var card = $scope.cards[event.currentTarget.dataset.index]
       cardFlip(card, {'doStack': event.altKey})
       if (event.shiftKey) {
-        repositionStack(card,'reverse')
+        if (card.stackgroup.display == 'default') {
+          card.stackgroup.display = 'spread'
+        } else {
+          card.stackgroup.display = 'default'
+        }
+        repositionStack(card)
       }
       $scope.$apply()
     })
