@@ -2,12 +2,27 @@
 
 ~ 11.5 hours
 
+Features:
+
+- tokens, counters:
+  - tokens, for now: just cards, loaded separately.
+  - create counter:
+    - click to increase
+    - alt-click to decrease?
+    - different colors?
+- slide-out side section where anything can be dropped
+
+- networking code
+- networking-related:
+  - use images from online source?
+    - put image source url at top of deck file?
+  - scale the game board styles (not use fixed pixels)
+  - some means of coordinating display size between two people?
+  
+- better highlighting for compact stacks–use an alpha mask?
 
 TODO:
 
-- put image source url at top of deck file
-- use images from online source?
-- better highlighting for compact stacks–use an alpha mask?
 
 De-complexify:
 
@@ -16,26 +31,8 @@ De-complexify:
 
 Refactor for understandability:
 
-- TODO: use actual object of some sort for card, so creation is more determinative?
+- TODO: use actual object of some sort for card?
 
-Bugs:
-
-- BUG: pull card from middle of stack, offsets back to original card position, rather than drop position
-- BUG: can't always drop on card easily (probably due to overlap with hidden due to above)
-
-
-
-
-- get cards with multiple variations to work (i.e. island1/2/3/4)
-- tokens, counters
-
-- networking code
-
-- hover blowup of card to see details
-- fix image for card back
-- scale the game board styles (not use fixed pixels)
-- some means of coordinating display size between two people?
-- full-screen mode
 
 
 ## Code Documentation

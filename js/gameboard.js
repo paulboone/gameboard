@@ -172,19 +172,6 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     } while (c)
   }
   
-  function cardPartOfStack(card,stack) {
-    console.log("cardPartOfStack",card,stack)
-    var c = getBaseCard(stack)    
-    do {
-      if (c.$$hashKey == card.$$hashKey) {
-        console.log("match?",c,card, stack)
-        return true
-      }
-      c = c.next
-    } while (c)
-    return false
-  }
-    
   function cardRotate(card, options) {
     var doStack = options.doStack
     var rotation = options.rotation
@@ -218,10 +205,6 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     } else {
       card.flipped = flipped
     }
-    
-    // if (flipped && card.zone == 'fixed') {
-    //   showStackAsReverseDefault(card)
-    // }
   }
   
   function stackMove(stack, x, y) {
@@ -260,17 +243,8 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   }
   
   function appendStack(stack, stackToAppend) {
-    // // PARANOID CHECK scheduled for removal
-    // if (cardPartOfStack(card,targetcard)) {
-    //   console.log("card already in stack!! STOPPING")
-    //   console.log("card ", addlcard)
-    //   printStack(targetcard)
-    //   return
-    // }
     var stack1 = getTopCard(stack)
     var stack2 = getBaseCard(stackToAppend)
-    
-    console.log("dropping ", stack2.src, " on ", stack1.src)
     
     stack1.next = stack2
     stack2.prev = stack1
@@ -429,18 +403,14 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       var targetcard = getTopCard($scope.cards[event.target.dataset.index]),
           draggingcard = $scope.cards[event.relatedTarget.dataset.index]
     
-      if (!cardPartOfStack(draggingcard,targetcard)) {
-        changeStack(targetcard,{'selected':true})
-      }
+      changeStack(targetcard,{'selected':true})
       $scope.$apply()
     },
     ondragleave: function (event) {
       var targetcard = getTopCard($scope.cards[event.target.dataset.index]),
           draggingcard = $scope.cards[event.relatedTarget.dataset.index]
       
-      if (!cardPartOfStack(draggingcard,targetcard)) {
-        changeStack(targetcard,{'selected':false})
-      }
+      changeStack(targetcard,{'selected':false})
       $scope.$apply()
     },
     ondrop: function (event) {
@@ -448,9 +418,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
           draggingcard = $scope.cards[event.relatedTarget.dataset.index]
       
       changeStack(targetcard,{'selected':false})
-      if (!cardPartOfStack(draggingcard,targetcard)) {
-        appendStack(targetcard,draggingcard)
-      }
+      appendStack(targetcard,draggingcard)
       $scope.$apply()
     },
   })
