@@ -407,7 +407,6 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     })
     .on('doubletap', function(event) {
       var card = $scope.cards[event.currentTarget.dataset.index]
-      cardFlip(card, {'doStack': event.altKey})
       if (event.shiftKey) {
         if (card.stackgroup.display == 'default') {
           card.stackgroup.display = 'spread'
@@ -415,6 +414,8 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
           card.stackgroup.display = 'default'
         }
         repositionStack(card)
+      } else {
+        cardFlip(card, {'doStack': event.altKey})
       }
       $scope.$apply()
     })

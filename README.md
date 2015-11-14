@@ -12,6 +12,7 @@ TODO:
 De-complexify:
 
 - TODO: some sort of zone hierarchy display options so we don't have to explicitly check for zone position, i.e. (compact || c.zone == 'fixed'))?
+- TODO: replace $$hashKey with something else? can cards still be dropped on themselves (since we've removed them from the stack on first drag?)
 
 Refactor for understandability:
 
