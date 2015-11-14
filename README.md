@@ -1,16 +1,7 @@
 # TODO
 
-~ 11.5 hours
+Required Features:
 
-Features:
-
-- tokens, counters:
-  - tokens, for now: just cards, loaded separately.
-  - create counter:
-    - click to increase
-    - alt-click to decrease?
-    - different colors?
-- slide-out side section where anything can be dropped
 
 - networking code
 - networking-related:
@@ -18,21 +9,23 @@ Features:
     - put image source url at top of deck file?
   - scale the game board styles (not use fixed pixels)
   - some means of coordinating display size between two people?
-  
+
+- counters:
+  - click to increase
+  - alt-click to decrease?
+  - different colors?
+
+- way to shuffle stack
+
+Optional:
+
+- slide-out side section where anything can be dropped
 - better highlighting for compact stacks–use an alpha mask?
 
-TODO:
+Refactors?
 
-
-De-complexify:
-
-- TODO: some sort of zone hierarchy display options so we don't have to explicitly check for zone position, i.e. (compact || c.zone == 'fixed'))?
-- TODO: replace $$hashKey with something else? can cards still be dropped on themselves (since we've removed them from the stack on first drag?)
-
-Refactor for understandability:
-
-- TODO: use actual object of some sort for card?
-
+- some sort of zone hierarchy display options so we don't have to explicitly check for zone position, i.e. (compact || c.zone == 'fixed'))?
+- use actual object of some sort for card?
 
 
 ## Code Documentation
