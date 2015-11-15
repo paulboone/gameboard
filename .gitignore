@@ -2,3 +2,4 @@ cards/
 decks/
 .DS_Store
 *.txt
+node_modules/
