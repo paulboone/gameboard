@@ -1,14 +1,34 @@
 # TODO
 
-Required Features:
+Networking code:
 
+- assume local image stores are the same on both computers.
+- add fixed / hidden zone for other player
+- make hidden zone player-specific
+  - create some sort of concept of player
+  - each card gets an owner, based on who dragged it to the gameboard.
 
-- networking code
-- networking-related:
-  - use images from online source?
-    - put image source url at top of deck file?
-  - scale the game board styles (not use fixed pixels)
-  - some means of coordinating display size between two people?
+send model change stream?
+
+- **$scope.cards.push**
+- extractCard
+- moveStackToFront
+- stackMove
+- snapToGrid (??)
+- cardRotate
+- cardSpread
+- cardFlip
+- appendStack
+- changeStack (some of them)
+
+networking-related:
+
+- use images from online source?
+  - put image source url at top of deck file?
+- scale the game board styles (not use fixed pixels)
+- some means of coordinating display size between two people?
+
+Other Required Features:
 
 - counters:
   - click to increase
@@ -21,6 +41,7 @@ Optional:
 
 - slide-out side section where anything can be dropped
 - better highlighting for compact stacks–use an alpha mask?
+- work on ipad...?
 
 Refactors?
 

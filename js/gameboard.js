@@ -188,6 +188,15 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       card.rotation = rotation
     }
   }
+  
+  function cardSpread(card) {
+    if (card.stackgroup.display == 'default') {
+      card.stackgroup.display = 'spread'
+    } else {
+      card.stackgroup.display = 'default'
+    }
+    repositionStack(card)
+  }
 
   function cardFlip(card, options) {
     var doStack = options.doStack
@@ -382,12 +391,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     .on('doubletap', function(event) {
       var card = $scope.cards[event.currentTarget.dataset.index]
       if (event.shiftKey) {
-        if (card.stackgroup.display == 'default') {
-          card.stackgroup.display = 'spread'
-        } else {
-          card.stackgroup.display = 'default'
-        }
-        repositionStack(card)
+        cardSpread(card)
       } else {
         cardFlip(card, {'doStack': event.altKey})
       }
