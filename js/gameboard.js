@@ -271,14 +271,11 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   /* default scopes                                                                                       */
   
   // $scope.zcounter = 0  
+  $scope.cards = []
   
-  $scope.cards = [
-    newCard({'x':100,'y':100, 'src': 'island1.jpg'}),
-    newCard({'x':300,'y':100, 'src': 'ainok tracker.jpg'})
-  ]
-  
-  
-
+  function addCards(cards) {
+    Array.prototype.push.apply($scope.cards,cards)
+  }
 
   function getMaxZ() {
     var maxZ = 0
@@ -319,14 +316,11 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   }
 
   function putCardsOnBoard(cardimages,x,y) {
+    var cards = []
     var card = null, prevcard = null
     for (var i=0; i<cardimages.length; i++) {
       card = newCard({'x':x,'y':y,'src':cardimages[i], 'prev':prevcard, 'next': null})
-      
-      
-      $scope.cards.push(card)
-      socket.emit('game', card)
-
+      cards.push(card)
       
       if (card.prev) {
         card.prev.next = card
@@ -334,7 +328,10 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       prevcard = card
     }
     snapToGrid(card)
+    addCards(cards)
     $scope.$apply()
+    
+    socket.emit('game', cards)
   }
 
   var holder = document.querySelector('.zone-board')
@@ -480,8 +477,8 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   
   socket.on('game', function(msg){
     console.log('got a message!', msg)
-    card = msg
-    $scope.cards.push(card)
+    cards = msg
+    addCards(cards)
     $scope.$apply()
   })
   
