@@ -1,4 +1,9 @@
 var gameboardApp = angular.module('gameboardApp', [])
+var socket = io('http://localhost:3000')
+
+
+
+
 
 function shuffle(array) {
   var currentIndex = array.length, temporaryValue, randomIndex ;
@@ -317,7 +322,12 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     var card = null, prevcard = null
     for (var i=0; i<cardimages.length; i++) {
       card = newCard({'x':x,'y':y,'src':cardimages[i], 'prev':prevcard, 'next': null})
+      
+      
       $scope.cards.push(card)
+      socket.emit('game', card)
+
+      
       if (card.prev) {
         card.prev.next = card
       }
@@ -467,7 +477,18 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       console.log('Dropped on zone ', card.zone)
     },
   })
+  
+  socket.on('game', function(msg){
+    console.log('got a message!', msg)
+    card = msg
+    $scope.cards.push(card)
+    $scope.$apply()
+  })
+  
+  
 })
+
+
 
 
   
