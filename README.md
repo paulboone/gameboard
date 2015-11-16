@@ -1,5 +1,7 @@
 # TODO
 
+stitch together cardstack on receiving end (let array order determine connections).
+
 Networking code:
 
 - assume local image stores are the same on both computers.
@@ -45,8 +47,23 @@ Optional:
 
 Refactors?
 
+
+
 - some sort of zone hierarchy display options so we don't have to explicitly check for zone position, i.e. (compact || c.zone == 'fixed'))?
 - use actual object of some sort for card?
+
+- don't use prev / next, just use arrays of cards (i.e. in stacks)?
+  - in theory, might be cleaner because concept of stacks would be more clearly differentiated from cards.
+    - but right now, _everything_ operates on the card level, which corrects for stacks as necessary.
+    - would need to keep track of the container (i.e. stacks), rather than just the cards.
+  
+  - currently cards are self-organizing with stack groups, but those groups go away when no cards point to them.
+    - would need to explicitly delete stacks
+  - would prevent circular links (would not be possible) => nope, since card still needs to know what stack it is part of
+  
+  - refactor extract / propagate, etc; cards list still exists because that is how everything is rendered, but we also have a stack list where a stack is a first order object (i.e. no stackgroup on the cards any more).
+
+    - would extract the card connections from the card
 
 
 ## Code Documentation

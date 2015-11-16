@@ -24,6 +24,7 @@ io.on('connection', function(socket){
   });
   socket.on('game', function(msg){
     console.log('message: ' + msg);
+    console.log('message.json: ', JSON.stringify(msg))
     socket.broadcast.emit('game', msg);
   });
 });
