@@ -361,7 +361,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     addCards(cards)
     $scope.$apply()
     
-    socket.emit('game', marshalCards(cards))
+    emit('addcards', marshalCards(cards))
   }
 
   var holder = document.querySelector('.zone-board')
@@ -505,10 +505,19 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     },
   })
   
+  
+  function emit(type, data) {
+    socket.emit('game', { 'type': type, 'data': data}) 
+  }
+  
   socket.on('game', function(msg){
     console.log('got a message!', msg)
-    cards = msg
-    addCards(unmarshalCards(cards))
+    var eventType = msg.type
+    var data = msg.data
+    
+    if (eventType == 'addcards') {
+       addCards(unmarshalCards(data))
+    }
     $scope.$apply()
   })
 })
