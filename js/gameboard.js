@@ -276,6 +276,36 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   function addCards(cards) {
     Array.prototype.push.apply($scope.cards,cards)
   }
+  
+  function marshalCards(cards) {
+    var cardsArray = angular.copy(cards)
+    for (var i=0; i<cardsArray.length; i++) {
+      delete cardsArray[i]['next']
+      delete cardsArray[i]['prev']
+      delete cardsArray[i]['stackgroup']
+    }
+    return cardsArray
+  }
+  
+  function unmarshalCards(cardsArray) {
+    var stackgroup = newStackgroup()
+    var cards = angular.copy(cardsArray)
+    for (var i=0; i<cards.length; i++) {
+      cards[i].stackgroup = stackgroup
+      if (i > 0) {
+        cards[i].prev = cards[i-1]
+      } else {
+        cards[i].prev = null
+      }
+      if (i < cards.length - 1) {
+        cards[i].next = cards[i+1]
+      } else {
+        cards[i].next = null
+      }
+    }
+    return cards
+  }
+  
 
   function getMaxZ() {
     var maxZ = 0
@@ -331,7 +361,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     addCards(cards)
     $scope.$apply()
     
-    socket.emit('game', cards)
+    socket.emit('game', marshalCards(cards))
   }
 
   var holder = document.querySelector('.zone-board')
@@ -478,11 +508,9 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   socket.on('game', function(msg){
     console.log('got a message!', msg)
     cards = msg
-    addCards(cards)
+    addCards(unmarshalCards(cards))
     $scope.$apply()
   })
-  
-  
 })
 
 
