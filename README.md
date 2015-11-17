@@ -27,6 +27,7 @@ networking-related:
   - put image source url at top of deck file?
 - scale the game board styles (not use fixed pixels)
 - some means of coordinating display size between two people?
+- rate limit move events
 
 Other Required Features:
 

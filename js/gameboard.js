@@ -412,6 +412,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       onmove: function(event) {
         var card = $scope.cards[event.target.dataset.index]
         stackMove(card, event.dx, event.dy)
+        emit('move', { 'index': event.target.dataset.index, 'dx': event.dx, 'dy': event.dy})
         $scope.$apply()
       },
       onend: function(event) {
@@ -522,7 +523,9 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     var data = msg.data
     
     if (eventType == 'addcards') {
-       addCards(unmarshalCards(data))
+      addCards(unmarshalCards(data))
+    } else if (eventType == 'move') {
+      stackMove($scope.cards[data.index],data.dx,data.dy)
     }
     $scope.$apply()
   })
