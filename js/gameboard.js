@@ -444,23 +444,29 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       var targetcard = getTopCard($scope.cards[event.target.dataset.index]),
           draggingcard = $scope.cards[event.relatedTarget.dataset.index]
     
-      changeStack(targetcard,{'selected':true})
-      $scope.$apply()
+      if (targetcard.stack != draggingcard.stack) {
+        changeStack(targetcard,{'selected':true})
+        $scope.$apply()
+      }
     },
     ondragleave: function (event) {
       var targetcard = getTopCard($scope.cards[event.target.dataset.index]),
           draggingcard = $scope.cards[event.relatedTarget.dataset.index]
       
-      changeStack(targetcard,{'selected':false})
-      $scope.$apply()
+      if (targetcard.stack != draggingcard.stack) {
+        changeStack(targetcard,{'selected':false})
+        $scope.$apply()
+      }
     },
     ondrop: function (event) {
       var targetcard = $scope.cards[event.target.dataset.index],
           draggingcard = $scope.cards[event.relatedTarget.dataset.index]
       
-      changeStack(targetcard,{'selected':false})
-      appendStack(targetcard,draggingcard)
-      $scope.$apply()
+      if (targetcard.stack != draggingcard.stack) {
+        changeStack(targetcard,{'selected':false})
+        appendStack(targetcard,draggingcard)
+        $scope.$apply()
+      }
     },
   })
   
