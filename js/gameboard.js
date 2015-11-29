@@ -414,6 +414,18 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     snapToGrid(card)
     $scope.$apply()
   }
+  
+  $scope.cardOnCardDrop = function(targetCardIndex, draggingCardIndex) {
+    var targetcard = $scope.cards[targetCardIndex],
+        draggingcard = $scope.cards[draggingCardIndex]
+    
+    appendStack(targetcard,draggingcard)
+    $scope.$apply()
+  }
+  
+    
+  
+  
   // singular card stack events – every card stack is draggable
   interact('.card')
     .draggable({
@@ -459,7 +471,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       var targetcard = getTopCard($scope.cards[event.target.dataset.index]),
           draggingcard = $scope.cards[event.relatedTarget.dataset.index]
     
-      if (targetcard.stack != draggingcard.stack) {
+      if (targetcard.stackgroup != draggingcard.stackgroup) {
         changeStack(targetcard,{'selected':true})
         $scope.$apply()
       }
@@ -468,7 +480,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       var targetcard = getTopCard($scope.cards[event.target.dataset.index]),
           draggingcard = $scope.cards[event.relatedTarget.dataset.index]
       
-      if (targetcard.stack != draggingcard.stack) {
+      if (targetcard.stackgroup != draggingcard.stackgroup) {
         changeStack(targetcard,{'selected':false})
         $scope.$apply()
       }
@@ -476,11 +488,10 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     ondrop: function (event) {
       var targetcard = $scope.cards[event.target.dataset.index],
           draggingcard = $scope.cards[event.relatedTarget.dataset.index]
-      
-      if (targetcard.stack != draggingcard.stack) {
+      if (targetcard.stackgroup != draggingcard.stackgroup) {
         changeStack(targetcard,{'selected':false})
-        appendStack(targetcard,draggingcard)
-        $scope.$apply()
+        $scope.cardOnCardDrop(event.target.dataset.index,event.relatedTarget.dataset.index)
+        emit('cardOnCardDrop',[event.target.dataset.index,event.relatedTarget.dataset.index])
       }
     },
   })
