@@ -423,7 +423,21 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     $scope.$apply()
   }
   
-    
+  $scope.cardOnTap = function(index, dostack) {
+    var card = $scope.cards[index]
+    cardRotate(card, {'doStack': dostack})
+    $scope.$apply()
+  }
+
+  $scope.cardOnDoubleTap = function(index, dospread, dostack) {
+    var card = $scope.cards[index]
+    if (dospread) {
+      cardSpread(card)
+    } else {
+      cardFlip(card, {'doStack': dostack})
+    }
+    $scope.$apply()
+  }
   
   
   // singular card stack events – every card stack is draggable
@@ -448,18 +462,12 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       }
     })
     .on('tap', function(event) {
-      var card = $scope.cards[event.currentTarget.dataset.index]
-      cardRotate(card, {'doStack': event.altKey})
-      $scope.$apply()
+      $scope.cardOnTap(event.currentTarget.dataset.index, event.altKey)
+      emit('cardOnTap', [event.currentTarget.dataset.index, event.altKey])
     })
     .on('doubletap', function(event) {
-      var card = $scope.cards[event.currentTarget.dataset.index]
-      if (event.shiftKey) {
-        cardSpread(card)
-      } else {
-        cardFlip(card, {'doStack': event.altKey})
-      }
-      $scope.$apply()
+      $scope.cardOnDoubleTap(event.currentTarget.dataset.index,event.shiftKey,event.altKey)
+      emit('cardOnDoubleTap',[event.currentTarget.dataset.index,event.shiftKey,event.altKey])
     })
     
   // card stacks can be dropped on other card stacks */
