@@ -30,7 +30,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   /* card methods for extraction to card class                                                            */
   
   function newStackgroup(vars) {
-    var stackgroup = {'display': 'default', xid: Math.trunc(Math.random() * 10000)}
+    var stackgroup = {'display': 'default', xid: Math.trunc(Math.random() * 10000), 'zone':'board'}
     for(var k in vars) { card[k] = vars[k] }
     return stackgroup
   }
@@ -87,7 +87,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   */
   function repositionStack(stack) {
     if (stack.stackgroup.display == 'default') {
-      if (getStackSize(stack) > 10 || stack.zone == 'fixed') {
+      if (getStackSize(stack) > 10 || stack.stackgroup.zone == 'fixed') {
         showStackAsCompact(stack)
       } else {
         showStackAsDefault(stack)
@@ -215,7 +215,6 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
 
     if (doStack) {
       changeStack(card,{'flipped': flipped})
-      
     } else {
       card.flipped = flipped
     }
@@ -263,7 +262,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     stack1.next = stack2
     stack2.prev = stack1
     repositionStack(stack1)
-    changeStack(stack2,{'zone':stack1.zone, 'stackgroup': stack1.stackgroup})
+    changeStack(stack2,{'stackgroup': stack1.stackgroup})
   }
   
   
@@ -439,6 +438,23 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
     $scope.$apply()
   }
   
+  $scope.cardOnZoneDrop = function(index, zone) {
+    var card = $scope.cards[index]
+    card.stackgroup.zone = zone
+    if (zone == 'private') {
+      // all cards in private zone start face up
+      cardFlip(card,{'flipped':true, 'doStack': true})
+      // all cards in private zone are snapped to y
+      getBaseCard(card).y = 730
+      snapToGrid(card)
+    } else if (zone == "fixed") {
+      // all cards in fixed zone are snapped to y
+      getBaseCard(card).y = 730
+      snapToGrid(card)
+    }
+    $scope.$apply()
+  }
+  
   
   // singular card stack events – every card stack is draggable
   interact('.card')
@@ -520,28 +536,20 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       event.relatedTarget.classList.remove('can-drop')
     },
     ondrop: function (event) {
+      var zone
       event.target.classList.remove('drop-target')
       event.relatedTarget.classList.remove('can-drop')
 
-      var card = $scope.cards[event.relatedTarget.dataset.index]
-      
       if (event.target.classList.contains("zone-private")) {
-        // all cards in private zone start face up
-        changeStack(card,{'zone': 'private','flipped':true})
-        // all cards in private zone are snapped to y
-        getBaseCard(card).y = 730
-        snapToGrid(card)
+        zone = 'private'
       } else if (event.target.classList.contains("zone-fixed")) {
-        changeStack(card,{'zone':'fixed'})
-        // all cards in private zone are snapped to y
-        getBaseCard(card).y = 730
-        snapToGrid(card)
+        zone = 'fixed'
       } else {
-        changeStack(card,{'zone':'board'})
+        zone = 'board'
       }
-
-      $scope.$apply()
-      console.log('Dropped on zone ', card.zone)
+      
+      $scope.cardOnZoneDrop(event.relatedTarget.dataset.index, zone)
+      emit('cardOnZoneDrop',[event.relatedTarget.dataset.index, zone])
     },
   })
   
