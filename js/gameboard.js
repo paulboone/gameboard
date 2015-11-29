@@ -393,6 +393,27 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   /********************************************************************************************************/
   /* interact event hooks                                                                                 */
 
+
+  $scope.cardOnStart = function(index, extract) {
+    var card = $scope.cards[index]
+    if (extract) {
+      extractCard(card)
+    }
+    moveStackToFront(card)
+    $scope.$apply()
+  }
+  
+  $scope.cardOnMove = function(index, dx, dy) {
+    var card = $scope.cards[index]
+    stackMove(card, dx, dy)
+    $scope.$apply()
+  }
+  
+  $scope.cardOnEnd = function(index) {
+    var card = $scope.cards[index]
+    snapToGrid(card)
+    $scope.$apply()
+  }
   // singular card stack events – every card stack is draggable
   interact('.card')
     .draggable({
@@ -402,23 +423,16 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
         elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
       },
       onstart: function(event) {
-        var card = $scope.cards[event.target.dataset.index]
-        if (! event.altKey) {
-          extractCard(card)
-        }
-        moveStackToFront(card)
-        $scope.$apply()
+        $scope.cardOnStart(event.target.dataset.index, (! event.altKey))
+        emit('cardOnStart', [event.target.dataset.index, (! event.altKey)])
       },
       onmove: function(event) {
-        var card = $scope.cards[event.target.dataset.index]
-        stackMove(card, event.dx, event.dy)
-        emit('move', { 'index': event.target.dataset.index, 'dx': event.dx, 'dy': event.dy})
-        $scope.$apply()
+        $scope.cardOnMove(event.target.dataset.index, event.dx, event.dy)
+        emit('cardOnMove',[event.target.dataset.index, event.dx, event.dy])
       },
       onend: function(event) {
-        var card = $scope.cards[event.target.dataset.index]
-        snapToGrid(card)
-        $scope.$apply()
+        $scope.cardOnEnd(event.target.dataset.index)
+        emit('cardOnEnd',[event.target.dataset.index])
       }
     })
     .on('tap', function(event) {
@@ -513,25 +527,19 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   })
   
   
-  function emit(type, data) {
-    socket.emit('game', { 'type': type, 'data': data}) 
+  function emit(method, data) {
+    socket.emit('game', { 'method': method, 'data': data})
   }
   
   socket.on('game', function(msg){
     console.log('got a message!', msg)
-    var eventType = msg.type
-    var data = msg.data
-    
-    if (eventType == 'addcards') {
-      addCards(unmarshalCards(data))
-    } else if (eventType == 'move') {
-      stackMove($scope.cards[data.index],data.dx,data.dy)
+    if (msg.method == 'addcards') {
+      addCards(unmarshalCards(msg.data))
+    } else {
+      $scope[msg.method].apply(this,msg.data)
     }
-    $scope.$apply()
   })
 })
-
-
 
 
   

@@ -1,5 +1,8 @@
 # TODO
 
+convert networking code to just apply args to function?
+
+
 Networking code:
 
 - assume local image stores are the same on both computers.
@@ -7,6 +10,14 @@ Networking code:
 - make hidden zone player-specific
   - create some sort of concept of player
   - each card gets an owner, based on who dragged it to the gameboard.
+
+
+send event change stream?
+
+- cardOnAdd
+- cardOnMove
+- cardOnEnd
+- etc?
 
 send model change stream?
 
