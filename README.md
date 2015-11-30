@@ -5,11 +5,25 @@ convert networking code to just apply args to function?
 
 Networking code:
 
-- assume local image stores are the same on both computers.
+can you HTML5 rotate and have the mouse move events still work?
+
+- reverse visualization for other player
+  - just HTML5 rotate the grid? => don't think so, since this would prevent ownership by spacial orientation
+    - or first player gets "rightside-up" (orientation #1), second player gets "upside-down" (orientation #2)
+    - each player generates a random #, lowest # determines who is player #1.
+    - nodejs server i++'s on each connect, lowest connect # determines who is player #1 / #2. => makes this not run on SAAS messaging platforms?
+  - handle transformation within the event passing structure
+    - YOUR private zone is on the bottom of the screen
+    
+- then:
+  - bottom hidden zone is mine
+  - top hidden zone is theirs
+
 - add fixed / hidden zone for other player
 - make hidden zone player-specific
   - create some sort of concept of player
-  - each card gets an owner, based on who dragged it to the gameboard.
+
+- each card gets an owner, based on who dragged it to the gameboard (only need to keep cards separate for additional games?)
 
 
 send event change stream?

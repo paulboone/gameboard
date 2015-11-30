@@ -269,7 +269,9 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   /********************************************************************************************************/
   /* default scopes                                                                                       */
   
-  // $scope.zcounter = 0  
+
+  $scope.inverse = 0
+  $scope.reflection = 1
   $scope.cards = []
   
   function addCards(cards) {
@@ -469,8 +471,8 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
         emit('cardOnStart', [event.target.dataset.index, (! event.altKey)])
       },
       onmove: function(event) {
-        $scope.cardOnMove(event.target.dataset.index, event.dx, event.dy)
-        emit('cardOnMove',[event.target.dataset.index, event.dx, event.dy])
+        $scope.cardOnMove(event.target.dataset.index, $scope.reflection * event.dx, $scope.reflection * event.dy)
+        emit('cardOnMove',[event.target.dataset.index, $scope.reflection * event.dx, $scope.reflection * event.dy])
       },
       onend: function(event) {
         $scope.cardOnEnd(event.target.dataset.index)

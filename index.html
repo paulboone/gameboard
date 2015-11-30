@@ -10,9 +10,8 @@
   <script src="js/gameboard.js"></script>
   <link href="css/default.css" rel="stylesheet" type="text/css" media="screen" />
 </head>
-<body ng-controller="gameboardCtrl">  
-    
-  <div class="zone zone-board">
+<body ng-controller="gameboardCtrl">
+  <div class="zone zone-board" style="transform:rotate({{inverse * 180}}deg)">
     <div class="zone zone-fixed">
       <p>Fixed</p>
     </div>
