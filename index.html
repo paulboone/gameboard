@@ -12,12 +12,19 @@
 </head>
 <body ng-controller="gameboardCtrl">
   <div class="zone zone-board" style="transform:rotate({{inverse * 180}}deg)">
-    <div class="zone zone-fixed">
+    <div class="zone zone-fixed zone-fixed-player0">
       <p>Fixed</p>
     </div>
-    <div class="zone zone-private">
+    <div class="zone zone-private zone-private-player0">
       <p>Hidden</p>
     </div>
+    <div class="zone zone-fixed zone-fixed-player1">
+      <p>Fixed</p>
+    </div>
+    <div class="zone zone-private zone-private-player1">
+      <p>Hidden</p>
+    </div>
+    
     <div class="draggable card" ng-repeat="card in cards" ng-class="{'drop-target':card.selected}" style="transform:translate({{card.x + card.xoffset}}px,{{card.y + card.yoffset}}px) rotate({{card.rotation}}deg); z-index: {{card.z}}" data-index="{{$index}}">
       <img ng-src="cards/{{card.flipped ? card.src : '_back.jpg'}}" />
     </div>

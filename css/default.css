@@ -14,14 +14,24 @@ body {
 
 .zone-private {
   position: absolute;
-  bottom:10px;
-  left:480px;
-  right:10px;
-  height:185px;
   background-color:#FFF;
   border-radius: 8px;
   border:2px dashed #888;
   z-index:0;
+}
+
+.zone-private-player0 {
+  bottom:10px;
+  height:185px;
+  left:480px;
+  right:10px;
+}
+
+.zone-private-player1 {
+  top:10px;
+  height:185px;
+  left:10px;
+  right:480px;
 }
 
 .zone-private p {
@@ -30,15 +40,26 @@ body {
 
 .zone-fixed {
   position: absolute;
-  bottom:10px;
-  left:10px;
-  width:460px;
-  height:185px;
   background-color:#FFF;
   border-radius: 8px;
   border:2px dashed #888;
   z-index:0;
 }
+
+.zone-fixed-player0 {
+  bottom:10px;
+  left:10px;
+  width:460px;
+  height:185px;
+}
+
+.zone-fixed-player1 {
+  top:10px;
+  right:10px;
+  width:460px;
+  height:185px;
+}
+
 
 .zone-fixed p {
   margin:5px;
