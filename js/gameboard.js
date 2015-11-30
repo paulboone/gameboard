@@ -2,9 +2,6 @@ var gameboardApp = angular.module('gameboardApp', [])
 var socket = io('http://localhost:3000')
 
 
-
-
-
 function shuffle(array) {
   var currentIndex = array.length, temporaryValue, randomIndex ;
 
@@ -270,6 +267,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   /* default scopes                                                                                       */
   
 
+  $scope.playernum = 0
   $scope.inverse = 0
   $scope.reflection = 1
   $scope.cards = []
@@ -394,7 +392,22 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
   /********************************************************************************************************/
   /* interact event hooks                                                                                 */
 
-
+  $scope.claim = function() {
+    emit('claimFailed',[$scope.playernum])
+  }
+  $scope.claimFailed = function(otherplayernum) {
+    if (otherplayernum == 0) {
+      $scope.playernum = 1
+      $scope.inverse = 1
+      $scope.reflection = -1
+    } else {
+      $scope.playernum = 0
+      $scope.inverse = 0
+      $scope.reflection = 1
+    }
+    $scope.$apply()
+  }
+  
   $scope.cardOnStart = function(index, extract) {
     var card = $scope.cards[index]
     if (extract) {
@@ -568,6 +581,7 @@ gameboardApp.controller('gameboardCtrl', function ($scope) {
       $scope[msg.method].apply(this,msg.data)
     }
   })
+  emit('claim',[])
 })
 
 
